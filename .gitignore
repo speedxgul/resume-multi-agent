@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.env.local
+
+# build / output artifacts
+outputs/*.pdf
+outputs/*.aux
+outputs/*.log
+outputs/*.out
+outputs/*.synctex.gz
+outputs/*.fdb_latexmk
+outputs/*.fls
+
+# user inputs are private
+inputs/*.pdf
+inputs/linkedin_profile.txt
+inputs/twitter_profile.txt
+inputs/manual_context.md
+inputs/urls.txt
+
+# cache from source collectors
+.cache/
+
+# OS
+.DS_Store

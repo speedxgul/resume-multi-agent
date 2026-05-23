@@ -17,14 +17,14 @@ sources:
   github_include_readmes: 5  # fetch READMEs for top N repos (richer signal for synthesizer)
   linkedin_profile_file: "inputs/linkedin_profile.txt"   # paste your LinkedIn text here
   twitter_profile_file: "inputs/twitter_profile.txt"     # paste pinned tweets / bio here
-  manual_context_file: "inputs/manual_context.md"        # free-form: hackathon wins, recent work, anything
-  urls_file: "inputs/urls.txt"                           # one URL per line
+  manual_context_file: "inputs/manual_context.md"        # free-form notes; http(s) links here are auto-fetched
+  urls_file: "inputs/urls.txt"                           # one URL per line (optional if links are in manual_context.md)
 
 # Models — tweak via env vars (see .env.example) if needed.
 models:
   synthesizer: "claude-opus-4-7"          # strong reasoning for the merge step
   extractor:   "claude-sonnet-4-5"         # cheap+fast for per-source extraction
-  max_tokens: 8192
+  max_tokens: 13000
 
 # LaTeX output preferences.
 output:

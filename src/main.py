@@ -125,11 +125,13 @@ def init_inputs():
             "# Include links to notable threads or project announcements.\n"
         ),
         "manual_context.md": (
-            "# Free-form context the agents should know about\n\n"
+            "# Free-form context the agents should know about\n"
+            "# Links below are auto-fetched (GitHub README, Devpost, etc.)\n\n"
             "## Recent work\n"
             "- \n\n"
             "## Hackathon wins\n"
-            "- \n\n"
+            "- Event name, prize, project — repo: https://github.com/you/project\n"
+            "- Or markdown: [project](https://github.com/you/project) — Devpost: https://devpost.com/software/example\n\n"
             "## Achievements / awards\n"
             "- \n\n"
             "## Anything else\n"

@@ -102,6 +102,25 @@ LinkedIn and Twitter don't have reliable public APIs for profile scraping. Inste
 
 The synthesizer treats this as first-class source data.
 
+## Links in manual_context.md
+
+Any `http(s)://` URL you write in `inputs/manual_context.md` is **automatically extracted and fetched** (markdown links and bare URLs both work). You do not need to duplicate them in `urls.txt`.
+
+| Link type | Behavior |
+|-----------|----------|
+| **GitHub repo** (`github.com/user/repo`) | README fetched via GitHub API |
+| **Devpost / project pages** | Page text extracted via HTTP |
+| **X / Twitter** | Not fetched (kept as reference links for the synthesizer) |
+
+URLs already listed in `urls.txt` are skipped when fetching from manual context to avoid duplicate requests.
+
+Example in `manual_context.md`:
+
+```markdown
+## Hackathon wins
+- EthVietnam 2025 — [leadpool](https://github.com/you/leadpool) — Devpost: https://devpost.com/software/leadpool
+```
+
 ## Config reference
 
 See `config.yaml` for all options. Key fields:
@@ -126,8 +145,8 @@ For best results, provide:
 1. **Current resume PDF** — baseline structure and older facts
 2. **GitHub username** — auto-fetches repos and READMEs
 3. **LinkedIn paste** — jobs, education, about
-4. **Manual context** — hackathon wins, metrics, recent projects not on GitHub
-5. **URLs** — Devpost pages, blog posts, certificates
+4. **Manual context** — hackathon wins, metrics, recent projects; paste GitHub/Devpost links inline (auto-fetched)
+5. **URLs** (optional) — extra pages in `urls.txt` if not already in manual context
 
 ## License
 

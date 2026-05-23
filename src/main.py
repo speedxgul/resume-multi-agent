@@ -94,7 +94,7 @@ def update(
     if skip_review:
         final = proposed
     else:
-        final = review_resume(proposed, console=console)
+        final = review_resume(proposed, config=cfg, console=console)
 
     paths = write_outputs(
         final,

@@ -73,6 +73,28 @@ python -m src.main update --no-compile
 python -m src.main init-inputs
 ```
 
+## Interactive review (feedback loop)
+
+After synthesis, each section is reviewed in order: `summary`, `experience`, `projects`, `skills`, `education`, `achievements`.
+
+For every section you can:
+
+| Key | Action |
+|-----|--------|
+| **y** | Accept the proposed version |
+| **n** | Keep the previous/current version |
+| **f** | Give natural-language feedback — Claude revises **only that section** and shows an updated diff |
+
+You can press **f** multiple times on the same section until you're happy, then **y** to accept and move on.
+
+Example feedback:
+
+- *"Shorten to 2 lines and mention hackathon wins"*
+- *"Make the LeadPool bullet highlight Zircuit track prize"*
+- *"Move Rust to the top of Languages"*
+
+Section revisions use `models.extractor` (default: Claude Sonnet). Optional config: `revise_max_tokens` (default `4096`).
+
 ## Outputs
 
 After a successful run, check `outputs/`:

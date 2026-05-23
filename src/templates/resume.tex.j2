@@ -1,0 +1,123 @@
+{% raw %}
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\titleformat{\section}{\large\bfseries\uppercase}{}{0pt}{}[\titlerule]
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+
+\newcommand{\resumeSubheading}[4]{%
+  \textbf{#1} \hfill #2 \\
+  \textit{#3} \hfill \textit{#4} \par\vspace{2pt}
+}
+
+\newcommand{\resumeItem}[1]{\item #1}
+
+\begin{document}
+{% endraw %}
+
+\begin{center}
+  {\LARGE \textbf{ {{ contact.name | e }} }} \\[4pt]
+  {% set links = [] %}
+  {% if contact.email %}{% set _ = links.append('\\href{mailto:' ~ (contact.email | url) ~ '}{' ~ (contact.email | e) ~ '}') %}{% endif %}
+  {% if contact.phone %}{% set _ = links.append(contact.phone | e) %}{% endif %}
+  {% if contact.location %}{% set _ = links.append(contact.location | e) %}{% endif %}
+  {% if contact.linkedin %}{% set _ = links.append('\\href{' ~ (contact.linkedin | url) ~ '}{LinkedIn}') %}{% endif %}
+  {% if contact.github %}{% set _ = links.append('\\href{' ~ (contact.github | url) ~ '}{GitHub}') %}{% endif %}
+  {% if contact.twitter %}{% set _ = links.append('\\href{' ~ (contact.twitter | url) ~ '}{Twitter}') %}{% endif %}
+  {% if contact.website %}{% set _ = links.append('\\href{' ~ (contact.website | url) ~ '}{Website}') %}{% endif %}
+  {{ links | join(' \\ $|$ \\ ') }}
+\end{center}
+
+\vspace{6pt}
+
+{% if summary %}
+\section{Summary}
+{{ summary | e }}
+\vspace{4pt}
+{% endif %}
+
+{% if experience %}
+\section{Experience}
+{% for job in experience %}
+\resumeSubheading{ {{ job.company | e }} }{ {{ (job.end_date or 'Present') | e }} }{ {{ job.role | e }} }{ {{ job.start_date | e }} }
+{% if job.location %}
+\textit{ {{ job.location | e }} } \par\vspace{2pt}
+{% endif %}
+{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=2pt]{% endraw %}
+{% for bullet in job.bullets %}
+  \resumeItem{ {{ bullet | e }} }
+{% endfor %}
+{% raw %}\end{itemize}{% endraw %}
+\vspace{4pt}
+{% endfor %}
+{% endif %}
+
+{% if projects %}
+\section{Projects}
+{% for project in projects %}
+\textbf{ {{ project.name | e }} }{% if project.link %} \hfill \href{ {{ project.link | url }} }{ {{ project.link | e }} }{% endif %}
+{% if project.description %}
+\par {{ project.description | e }}
+{% endif %}
+{% if project.tech %}
+\par\textit{Tech: {{ project.tech | join(', ') | e }}}
+{% endif %}
+{% if project.bullets %}
+{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=2pt]{% endraw %}
+{% for bullet in project.bullets %}
+  \resumeItem{ {{ bullet | e }} }
+{% endfor %}
+{% raw %}\end{itemize}{% endraw %}
+{% endif %}
+\vspace{4pt}
+{% endfor %}
+{% endif %}
+
+{% if skills %}
+\section{Skills}
+{% for group, items in skills.items() %}
+\textbf{ {{ group | e }}:} {{ items | join(', ') | e }} \par
+{% endfor %}
+\vspace{4pt}
+{% endif %}
+
+{% if education %}
+\section{Education}
+{% for edu in education %}
+\resumeSubheading{ {{ edu.institution | e }} }{ {{ (edu.end_date or '') | e }} }{ {{ edu.degree | e }}{% if edu.field %}, {{ edu.field | e }}{% endif %} }{ {{ (edu.start_date or '') | e }} }
+{% if edu.gpa %}
+GPA: {{ edu.gpa | e }} \par
+{% endif %}
+{% if edu.coursework %}
+Coursework: {{ edu.coursework | join(', ') | e }} \par
+{% endif %}
+\vspace{4pt}
+{% endfor %}
+{% endif %}
+
+{% if achievements %}
+\section{Achievements}
+{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=2pt]{% endraw %}
+{% for item in achievements %}
+  \resumeItem{
+    \textbf{ {{ item.title | e }} }{% if item.date %} ({{ item.date | e }}){% endif %}
+    {% if item.description %} — {{ item.description | e }}{% endif %}
+    {% if item.link %} \href{ {{ item.link | url }} }{link}{% endif %}
+  }
+{% endfor %}
+{% raw %}\end{itemize}{% endraw %}
+{% endif %}
+
+{% raw %}
+\end{document}
+{% endraw %}

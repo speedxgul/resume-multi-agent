@@ -1,6 +1,6 @@
 # Resume Agent
 
-Multi-agent resume updater built with **LangGraph** and **Claude**. It pulls fresh data from your GitHub, pasted LinkedIn/Twitter text, manual notes, and arbitrary URLs, merges that with your existing PDF resume, lets you review section-by-section, then renders a new **LaTeX + PDF**.
+Multi-agent resume updater CLI built with **LangGraph** and **Claude**. It pulls fresh data from your GitHub, pasted LinkedIn/Twitter text, manual notes, and arbitrary URLs, merges that with your existing PDF resume, lets you review section-by-section, then renders a new **LaTeX + PDF**.
 
 ## Architecture
 
@@ -19,15 +19,20 @@ flowchart LR
   Render --> Out[resume.tex / resume.pdf / resume.json]
 ```
 
+
+
 **Agents (LangGraph nodes):**
-| Agent | Role |
-|---|---|
-| GitHub collector | Repos, stars, languages, README excerpts |
-| LinkedIn loader | Reads pasted profile text |
-| Twitter loader | Reads pasted bio / pinned tweets |
-| Manual context loader | Hackathon wins, recent work, free-form notes |
-| URL fetcher | Fetches project pages, Devpost, blogs |
-| Synthesizer | Claude merges everything into structured JSON resume |
+
+
+| Agent                 | Role                                                 |
+| --------------------- | ---------------------------------------------------- |
+| GitHub collector      | Repos, stars, languages, README excerpts             |
+| LinkedIn loader       | Reads pasted profile text                            |
+| Twitter loader        | Reads pasted bio / pinned tweets                     |
+| Manual context loader | Hackathon wins, recent work, free-form notes         |
+| URL fetcher           | Fetches project pages, Devpost, blogs                |
+| Synthesizer           | Claude merges everything into structured JSON resume |
+
 
 ## Quick start
 
@@ -73,20 +78,47 @@ python -m src.main update --no-compile
 python -m src.main init-inputs
 ```
 
+## Interactive review (feedback loop)
+
+After synthesis, each section is reviewed in order: `summary`, `experience`, `projects`, `skills`, `education`, `achievements`.
+
+For every section you can:
+
+
+| Key   | Action                                                                                          |
+| ----- | ----------------------------------------------------------------------------------------------- |
+| **y** | Accept the proposed version                                                                     |
+| **n** | Keep the previous/current version                                                               |
+| **f** | Press **f** then Enter, then type feedback on the next prompt (arrow keys work there) |
+
+
+You can press **f** multiple times on the same section until you're happy, then **y** to accept and move on.
+
+Example feedback:
+
+- *"Shorten to 2 lines and mention hackathon wins"*
+- *"Make the LeadPool bullet highlight Zircuit track prize"*
+- *"Move Rust to the top of Languages"*
+
+Section revisions use `models.extractor` (default: Claude Sonnet). Optional config: `revise_max_tokens` (default `4096`).
+
 ## Outputs
 
 After a successful run, check `outputs/`:
 
-| File | Description |
-|---|---|
-| `resume.draft.json` | Raw synthesizer output (pre-review) |
-| `resume.json` | Final approved structured resume |
-| `resume.tex` | LaTeX source |
-| `resume.pdf` | Compiled PDF (needs `tectonic` or `pdflatex`) |
+
+| File                | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `resume.draft.json` | Raw synthesizer output (pre-review)           |
+| `resume.json`       | Final approved structured resume              |
+| `resume.tex`        | LaTeX source                                  |
+| `resume.pdf`        | Compiled PDF (needs `tectonic` or `pdflatex`) |
+
 
 ## PDF compilation
 
 Install one of:
+
 - [Tectonic](https://tectonic-typesetting.github.io/) (recommended, single binary)
 - TeX Live (`pdflatex`)
 
@@ -106,11 +138,13 @@ The synthesizer treats this as first-class source data.
 
 Any `http(s)://` URL you write in `inputs/manual_context.md` is **automatically extracted and fetched** (markdown links and bare URLs both work). You do not need to duplicate them in `urls.txt`.
 
-| Link type | Behavior |
-|-----------|----------|
-| **GitHub repo** (`github.com/user/repo`) | README fetched via GitHub API |
-| **Devpost / project pages** | Page text extracted via HTTP |
-| **X / Twitter** | Not fetched (kept as reference links for the synthesizer) |
+
+| Link type                                | Behavior                                                  |
+| ---------------------------------------- | --------------------------------------------------------- |
+| **GitHub repo** (`github.com/user/repo`) | README fetched via GitHub API                             |
+| **Devpost / project pages**              | Page text extracted via HTTP                              |
+| **X / Twitter**                          | Not fetched (kept as reference links for the synthesizer) |
+
 
 URLs already listed in `urls.txt` are skipped when fetching from manual context to avoid duplicate requests.
 

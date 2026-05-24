@@ -24,14 +24,17 @@ HELP_TEXT = """
   help              Show this help
   pdf, compile      Compile outputs/resume.tex → PDF
   open              Open the PDF in your default viewer
-  show [section]    Show section JSON (or resume overview)
+  show [section]    Show section JSON (reloads from disk first; try `show contact`, `show order`)
   show order        Show PDF section order (section_order)
+  reload            Reload resume.json from disk into memory
   edit <section>    Revise one section with Claude (feedback prompt)
   edit order        Reorder PDF sections (summary, experience, …)
   edit              Revise the full resume with Claude
-  save              Reload resume.json from disk, then write .tex
+  save              Reload resume.json from disk, then write .tex (+ .json)
   quit, exit        Leave edit mode
 
+[dim]Tip: edit outputs/resume.json in your editor, save the file, then run[/dim]
+[dim]`save` and `pdf` here — no need to restart the shell.[/dim]
 [dim]Inline links: ask Claude to use [visible text](https://url) in any text field.[/dim]
 [dim]Reorder jobs/projects: ask Claude to move items in the array (2nd from bottom = index N-2).[/dim]
 """
@@ -83,12 +86,14 @@ def _open_path(path: Path) -> None:
 
 
 def reload_from_disk(state: ShellState, console: Console) -> None:
+    """Load resume.json from disk into shell memory (picks up manual editor changes)."""
     try:
         state.resume = load_resume_json(state.json_path)
     except Exception as exc:
         console.print(
             Panel(
-                f"Could not load {state.json_path}:\n{exc}",
+                f"Could not load {state.json_path}:\n{exc}\n"
+                "Fix the JSON file and try again.",
                 title="Reload failed",
                 border_style="red",
             )
@@ -133,7 +138,7 @@ def _show_overview(console: Console, resume: Resume) -> None:
 
 def _cmd_pdf(console: Console, state: ShellState) -> None:
     if not state.tex_path.exists():
-        _save_resume(state, compile_pdf=False, reload=True, console=console)
+        _save_resume(state, compile_pdf=False, console=console)
     try:
         pdf = compile_resume_pdf(state.tex_path, state.output_dir)
         state.pdf_path = pdf
@@ -241,9 +246,18 @@ def _dispatch_line(console: Console, state: ShellState, line: str) -> bool:
         console.print(f"[dim]Opened {state.pdf_path}[/dim]")
         return True
 
+    if cmd == "reload":
+        try:
+            reload_from_disk(state, console)
+            console.print(f"[green]Reloaded[/green] {state.json_path}")
+            console.print(f"[dim]Contact location: {state.resume.contact.location or '(empty)'}[/dim]")
+        except Exception:
+            pass
+        return True
+
     if cmd == "save":
         try:
-            paths = _save_resume(state, compile_pdf=False, reload=True, console=console)
+            paths = _save_resume(state, compile_pdf=False, console=console)
             console.print(
                 f"[green]Reloaded from disk and saved[/green] {paths['json']} and {paths['tex']}"
             )
@@ -252,6 +266,10 @@ def _dispatch_line(console: Console, state: ShellState, line: str) -> bool:
         return True
 
     if cmd == "show":
+        try:
+            reload_from_disk(state, console)
+        except Exception:
+            return True
         if arg in ("order", "section_order"):
             render_full_section(console, "section_order", state.resume.section_order)
         elif arg == "contact":

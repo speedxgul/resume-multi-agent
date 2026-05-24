@@ -12,7 +12,7 @@ from rich.console import Console
 from src.cli.edit_shell import run_edit_shell
 from src.config import load_config
 from src.graph import run_pipeline
-from src.renderer import compile_resume_pdf, write_outputs
+from src.renderer import compile_resume_pdf, load_resume_json, write_outputs
 from src.reviewer import review_resume
 from src.schema import Resume
 from src.utils.pdf import extract_text
@@ -180,6 +180,55 @@ def compile_cmd(
 
         _open_path(pdf)
         console.print("[dim]Opened PDF.[/dim]")
+
+
+@app.command()
+def render(
+    config: Path = typer.Option(
+        Path("config.yaml"),
+        "--config",
+        help="Path to config.yaml.",
+    ),
+    json_path: Path = typer.Option(
+        Path("outputs/resume.json"),
+        "--json",
+        help="Resume JSON to render.",
+    ),
+    no_compile: bool = typer.Option(
+        False,
+        "--no-compile",
+        help="Write .tex only; skip PDF compilation.",
+    ),
+    open_pdf: bool = typer.Option(
+        False,
+        "--open",
+        help="Open the PDF after rendering.",
+    ),
+):
+    """Reload resume.json from disk and regenerate .tex (+ PDF)."""
+    cfg = load_config(config)
+    out_dir, _, _, basename = _output_paths(cfg)
+
+    if not json_path.exists():
+        console.print(f"[red]Resume JSON not found: {json_path}[/red]")
+        raise typer.Exit(code=1)
+
+    resume = load_resume_json(json_path)
+    paths = write_outputs(
+        resume,
+        output_dir=out_dir,
+        basename=basename,
+        compile=not no_compile and bool(cfg.get("output", {}).get("compile_pdf", True)),
+    )
+
+    console.print("[bold green]Rendered from JSON[/bold green]")
+    for kind, path in paths.items():
+        console.print(f"  {kind}: {path}")
+
+    if open_pdf and "pdf" in paths:
+        from src.cli.edit_shell import _open_path
+
+        _open_path(paths["pdf"])
 
 
 @app.command()

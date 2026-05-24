@@ -7,11 +7,16 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
-from ..schema import Achievement, Education, Experience, Project, Resume
+from ..schema import Achievement, Education, Experience, Project, Resume, normalize_section_order
 from ..utils.llm import complete_json
+from .prompt_snippets import LINK_GUIDANCE, REORDER_GUIDANCE
 
 SECTION_SCHEMA_HINTS: dict[str, str] = {
     "summary": 'string or null, e.g. "Software engineer focused on ..."',
+    "section_order": (
+        "array of section names controlling PDF layout — use exactly once each: "
+        "summary, experience, projects, skills, education, achievements"
+    ),
     "experience": (
         "array of objects: "
         '{company, role, location?, start_date, end_date?, bullets: string[]}'
@@ -32,6 +37,7 @@ SECTION_SCHEMA_HINTS: dict[str, str] = {
 
 _SECTION_VALIDATORS: dict[str, TypeAdapter[Any]] = {
     "summary": TypeAdapter(str | None),
+    "section_order": TypeAdapter(list[str]),
     "experience": TypeAdapter(list[Experience]),
     "projects": TypeAdapter(list[Project]),
     "skills": TypeAdapter(dict[str, list[str]]),
@@ -39,14 +45,16 @@ _SECTION_VALIDATORS: dict[str, TypeAdapter[Any]] = {
     "achievements": TypeAdapter(list[Achievement]),
 }
 
-SYSTEM_PROMPT = """You revise one section of a resume based on user feedback.
+SYSTEM_PROMPT = f"""You revise one section of a resume based on user feedback.
 
 Rules:
 - Apply the user's feedback precisely. Do not ignore requests.
 - Do not invent employers, dates, metrics, or awards not supported by the current content or feedback.
 - If feedback asks to remove something, remove it. If it asks to reword, reword. If it asks to add detail the user provided, add it.
 - Keep bullets concise and ATS-friendly unless the user asks otherwise.
-- Return ONLY valid JSON in this exact shape: {"value": <revised section value>}
+{LINK_GUIDANCE}
+{REORDER_GUIDANCE}
+- Return ONLY valid JSON in this exact shape: {{"value": <revised section value>}}
 - The "value" must match the section schema described in the user message.
 - No markdown fences, no commentary outside JSON.
 """
@@ -115,4 +123,7 @@ Return JSON: {{"value": <revised {section}>}}
     if "value" not in payload:
         raise ValueError('Model response missing "value" key')
 
-    return _validate_section(section, payload["value"])
+    value = payload["value"]
+    if section == "section_order":
+        return normalize_section_order(value)
+    return _validate_section(section, value)

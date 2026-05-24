@@ -112,6 +112,26 @@ python -m src.main shell
 
 Each `edit` calls Claude (`models.extractor`). You confirm changes before they are saved. By default, run `pdf` after edits to refresh the PDF; set `output.auto_compile_after_edit: true` in `config.yaml` to compile automatically.
 
+## Inline links and section reordering
+
+**Clickable text in the PDF:** Ask Claude to use markdown `[visible text](https://url)` in any text field — summary, bullets, company names, skills, etc.
+
+Example feedback:
+- *"In the LeadPool bullet, link 'LeadPool' to https://github.com/speedxgul/LeadPool"*
+- Claude should output: `Built [LeadPool](https://github.com/speedxgul/LeadPool) for EthVietnam`
+
+**Reorder entries within a section** (jobs, projects): Claude reorders the JSON array. Say explicitly: *"Move Aptos to second from bottom"* or *"Put education section before experience"*.
+
+**Reorder PDF sections** (Summary, Experience, …):
+- `edit order` in the shell, or full `edit` with *"Put Education before Experience on the resume"*
+- Stored in `section_order` in `resume.json`
+
+```bash
+> show order
+> edit order
+> Put education right after summary, then experience, projects, skills, achievements
+```
+
 Example:
 
 ```text

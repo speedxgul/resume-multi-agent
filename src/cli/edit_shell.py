@@ -18,6 +18,7 @@ from ..revision import apply_section_edit_with_confirm
 from ..schema import REVIEWABLE_SECTIONS, Resume
 from ..utils.diff import render_full_section, render_section_diff
 from ..utils.prompts import ask_confirm, ask_feedback
+from ..utils.section_order import format_section_order, move_section
 
 HELP_TEXT = """
 [bold]Commands[/bold]
@@ -26,12 +27,18 @@ HELP_TEXT = """
   open              Open the PDF in your default viewer
   show [section]    Show section JSON (reloads from disk first; try `show contact`, `show order`)
   show order        Show PDF section order (section_order)
+  order             Same as `show order`
+  move A above B    Move section block A above B (instant, no Claude)
+  move A below B    Move section block A below B
   reload            Reload resume.json from disk into memory
   edit <section>    Revise one section with Claude (feedback prompt)
-  edit order        Reorder PDF sections (summary, experience, …)
+  edit order        Reorder PDF sections with natural-language feedback
   edit              Revise the full resume with Claude
   save              Reload resume.json from disk, then write .tex (+ .json)
   quit, exit        Leave edit mode
+
+[dim]Section blocks:[/dim] summary, experience, projects, skills, education, achievements
+[dim]Example:[/dim] move education above experience
 
 [dim]Tip: edit outputs/resume.json in your editor, save the file, then run[/dim]
 [dim]`save` and `pdf` here — no need to restart the shell.[/dim]
@@ -176,6 +183,66 @@ def _cmd_edit_section(console: Console, state: ShellState, section: str) -> None
         console.print("[dim]Run `pdf` to refresh the PDF.[/dim]")
 
 
+def _cmd_order(console: Console, state: ShellState) -> None:
+    console.print("[bold]PDF section order[/bold] (top → bottom):\n")
+    console.print(format_section_order(state.resume.section_order))
+    console.print(
+        "\n[dim]Use `move education above experience` to reorder blocks instantly.[/dim]"
+    )
+
+
+def _cmd_move(console: Console, state: ShellState, parts: list[str]) -> None:
+    """Parse: move <block> above|below|before|after <anchor>"""
+    if len(parts) < 4:
+        console.print(
+            "[red]Usage:[/red] move <section> above|below <section>\n"
+            "[dim]Example: move education above experience[/dim]"
+        )
+        return
+
+    block = parts[1]
+    direction = parts[2].lower()
+    anchor = parts[3]
+
+    before: str | None = None
+    after: str | None = None
+    if direction in ("above", "before"):
+        before = anchor
+    elif direction in ("below", "after"):
+        after = anchor
+    else:
+        console.print(
+            f"[red]Expected above/below/before/after, got {direction!r}.[/red]\n"
+            "[dim]Example: move education above experience[/dim]"
+        )
+        return
+
+    old_order = list(state.resume.section_order)
+    try:
+        new_order = move_section(old_order, block, before=before, after=after)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        return
+
+    if new_order == old_order:
+        console.print("[yellow]Section order unchanged.[/yellow]")
+        return
+
+    state.resume.section_order = new_order
+    paths = _save_resume(
+        state,
+        compile_pdf=state.auto_compile_after_edit(),
+        reload=False,
+    )
+    console.print("[green]Updated section order:[/green]")
+    console.print(format_section_order(new_order))
+    console.print(f"[green]Saved[/green] {paths['json']} and {paths['tex']}")
+    if "pdf" in paths:
+        console.print(f"[green]Compiled[/green] {paths['pdf']}")
+    else:
+        console.print("[dim]Run `pdf` to refresh the PDF.[/dim]")
+
+
 def _cmd_edit_full(console: Console, state: ShellState) -> None:
     feedback = ask_feedback(console)
     if not feedback:
@@ -265,13 +332,25 @@ def _dispatch_line(console: Console, state: ShellState, line: str) -> bool:
             pass
         return True
 
+    if cmd == "order":
+        try:
+            reload_from_disk(state, console)
+        except Exception:
+            return True
+        _cmd_order(console, state)
+        return True
+
+    if cmd == "move":
+        _cmd_move(console, state, parts)
+        return True
+
     if cmd == "show":
         try:
             reload_from_disk(state, console)
         except Exception:
             return True
         if arg in ("order", "section_order"):
-            render_full_section(console, "section_order", state.resume.section_order)
+            _cmd_order(console, state)
         elif arg == "contact":
             render_full_section(console, "contact", state.resume.contact.model_dump())
         elif arg and arg in REVIEWABLE_SECTIONS:

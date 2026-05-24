@@ -1,0 +1,31 @@
+# Extra URLs to fetch — one per line
+# Lines starting with # are ignored, blank lines are skipped
+#
+# HOW TO USE:
+#   Copy relevant URLs here, or add them directly in manual_context.md
+#   (URLs in manual_context.md are auto-extracted — no need to duplicate them here)
+#
+# WHAT GETS FETCHED:
+#   GitHub repos    → README via API (up to 8 000 chars)
+#   Devpost pages   → project description, tech stack, prizes
+#   Blog posts      → full article text
+#   YouTube         → page title + description (not transcript)
+#   Personal sites  → visible page text
+#
+# WHAT IS SKIPPED:
+#   Twitter/X links → kept as reference only
+#   PDFs, images    → skipped (binary content)
+
+# --- Hackathon project pages ---
+https://devpost.com/software/settlestream
+https://devpost.com/software/another-project
+
+# --- Blog posts / articles ---
+https://mirror.xyz/youraddress/article-slug
+https://yourblog.dev/posts/technical-deep-dive
+
+# --- Conference talks / videos ---
+https://youtu.be/your_talk_id
+
+# --- Project / portfolio pages ---
+https://janedoe.dev/projects

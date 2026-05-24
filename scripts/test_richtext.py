@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from src.utils.richtext import render_richtext
 
-assert "href" in render_richtext("See [LeadPool](https://github.com/u/LeadPool) here")
-assert "LeadPool" in render_richtext("See [LeadPool](https://github.com/u/LeadPool) here")
+assert "href" in render_richtext("See [SettleStream](https://github.com/u/settlestream) here")
+assert "SettleStream" in render_richtext("See [SettleStream](https://github.com/u/settlestream) here")
 assert render_richtext("plain text") == "plain text"
 print("richtext ok")
 

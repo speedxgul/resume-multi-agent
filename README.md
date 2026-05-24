@@ -1,264 +1,113 @@
 # Resume Agent
 
-Multi-agent resume updater CLI built with **LangGraph** and **Claude**. It pulls fresh data from your GitHub, pasted LinkedIn/Twitter text, manual notes, and arbitrary URLs, merges that with your existing PDF resume, lets you review section-by-section, then renders a new **LaTeX + PDF**.
+Multi-agent resume updater built with **LangGraph** and **Claude**. Pulls fresh data from GitHub, pasted LinkedIn/Twitter text, manual notes, and URLs — merges with your existing PDF — lets you review section-by-section — then renders a polished **LaTeX + PDF**.
 
-## Architecture
-
-```mermaid
-flowchart LR
-  PDF[Current resume PDF] --> Extract
-  GH[GitHub API] --> Collectors
-  LI[LinkedIn paste] --> Collectors
-  TW[Twitter paste] --> Collectors
-  MC[Manual context] --> Collectors
-  URL[URL fetcher] --> Collectors
-  Collectors --> Synth[Synthesizer agent]
-  Extract --> Synth
-  Synth --> Review[Human review CLI]
-  Review --> Render[LaTeX renderer]
-  Render --> Out[resume.tex / resume.pdf / resume.json]
+```
+PDF + GitHub + LinkedIn + URLs → [Collectors] → Claude Synthesizer → Review → LaTeX/PDF
 ```
 
+---
 
+## Docs
 
-**Agents (LangGraph nodes):**
+| Guide | What it covers |
+|-------|---------------|
+| [Getting Started](docs/getting-started.md) | Install, configure, first run |
+| [CLI Reference](docs/cli-reference.md) | Every command and flag |
+| [Inputs Guide](docs/inputs-guide.md) | What to put in each input file |
+| [Edit Shell](docs/edit-shell.md) | Post-render interactive shell reference |
+| [Config Reference](docs/config-reference.md) | Every `config.yaml` field |
 
+---
 
-| Agent                 | Role                                                 |
-| --------------------- | ---------------------------------------------------- |
-| GitHub collector      | Repos, stars, languages, README excerpts             |
-| LinkedIn loader       | Reads pasted profile text                            |
-| Twitter loader        | Reads pasted bio / pinned tweets                     |
-| Manual context loader | Hackathon wins, recent work, free-form notes         |
-| URL fetcher           | Fetches project pages, Devpost, blogs                |
-| Synthesizer           | Claude merges everything into structured JSON resume |
-
-
-## Quick start
+## Quick Start
 
 ```bash
-# 1. Create virtualenv and install deps
-python3 -m venv .venv
-source .venv/bin/activate
+# 1. Clone and set up
+git clone https://github.com/your-username/resume-agent
+cd resume-agent
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 2. Configure secrets
+# 2. Secrets
 cp .env.example .env
-# Edit .env — set ANTHROPIC_API_KEY (required)
-# Optional: GITHUB_TOKEN for higher rate limits
+# → Edit .env, set ANTHROPIC_API_KEY (required)
+#   Optionally set GITHUB_TOKEN for higher rate limits
 
-# 3. Fill config + input files
-python -m src.main init-inputs
-# Edit config.yaml — name, email, github_username, links
-# Put your current resume at inputs/resume.pdf
-# Paste LinkedIn/Twitter text into inputs/*.txt
-# Add hackathon wins / context to inputs/manual_context.md
-# Add URLs to inputs/urls.txt
+# 3. Configure
+# → Edit config.yaml — fill in your name, email, github_username, links
+# → Put your current resume at inputs/resume.pdf
+# → Fill inputs/manual_context.md, inputs/linkedin_profile.txt, etc.
+#   (run `python -m src.main init-inputs` to create blank templates)
 
 # 4. Run
 python -m src.main update
 ```
 
-## Commands
+See [Getting Started](docs/getting-started.md) for the full walkthrough.
 
-```bash
-# Full pipeline with interactive review (default)
-python -m src.main update
+---
 
-# Custom PDF path
-python -m src.main update --pdf ~/Downloads/my_resume.pdf
+## Architecture
 
-# Skip human review (accept all synthesizer changes)
-python -m src.main update --skip-review
-
-# Skip PDF compilation during update (compile later in shell)
-python -m src.main update --no-compile
-
-# Enter post-render edit shell after update
-python -m src.main update --interactive
-
-# Edit an existing resume anytime (after reviewing PDF)
-python -m src.main shell
-
-# Compile tex to PDF only
-python -m src.main compile
-python -m src.main compile --open
-
-# Regenerate tex + PDF after editing outputs/resume.json by hand
-python -m src.main render
-python -m src.main render --open
-
-# Create starter input files
-python -m src.main init-inputs
+```mermaid
+flowchart LR
+  PDF[Resume PDF] --> Extract
+  GH[GitHub API] --> Collectors
+  LI[LinkedIn paste] --> Collectors
+  TW[Twitter paste] --> Collectors
+  MC[Manual context + URLs] --> Collectors
+  Collectors --> Synth[Claude Synthesizer\nOpus]
+  Extract --> Synth
+  Synth --> Review[Human review CLI]
+  Review --> Render[LaTeX renderer]
+  Render --> Out[resume.json / .tex / .pdf]
 ```
 
-## Post-render edit shell
+| Agent | Role |
+|-------|------|
+| GitHub collector | Repos, languages, README excerpts via GitHub API |
+| LinkedIn loader | Reads pasted profile text |
+| Twitter loader | Reads pasted bio / pinned tweets |
+| Manual context | Hackathon wins, recent projects, free-form notes; auto-fetches embedded URLs |
+| URL fetcher | Fetches Devpost, blogs, project pages |
+| Synthesizer | Claude Opus merges everything into structured resume JSON |
+| Section reviser | Claude Sonnet applies feedback to individual sections |
 
-After `update` writes `outputs/resume.json` and `outputs/resume.tex`, use **edit mode** to compile PDF on demand and apply Claude-powered changes without re-running the full pipeline.
+---
 
-```bash
-# Generate tex/json, then drop into edit shell
-python -m src.main update --no-compile --interactive
+## Key Features
 
-# Or open shell later (e.g. after reviewing the PDF)
-python -m src.main shell
-```
+- **Full pipeline in one command** — `update` collects, synthesizes, reviews, and renders
+- **Interactive review** — approve/reject/refine each section with natural-language feedback before saving
+- **Edit shell** — post-render REPL: compile PDF on demand, Claude edits, instant section reordering
+- **Inline links** — `[text](url)` in any field becomes a clickable `\href` in the PDF
+- **Section reordering** — `move education above experience` in the shell, or via Claude
+- **Manual JSON edits** — edit `outputs/resume.json` in any editor, run `save` + `pdf` in the shell
 
-| Shell command | Action |
-|---------------|--------|
-| `pdf` / `compile` | Build `outputs/resume.pdf` from `.tex` |
-| `open` | Open the PDF in your default viewer |
-| `reload` | Reload `resume.json` from disk (after manual edits in your editor) |
-| `show [section]` | Print section JSON or overview (reloads from disk first; try `show contact`) |
-| `edit experience` | Natural-language feedback → Claude revises that section |
-| `edit` | Feedback → Claude revises the full resume |
-| `save` | **Reload** `resume.json` from disk, then write `.tex` |
-| `quit` | Exit |
+---
 
-**Manual JSON edits** (e.g. change `contact.location`): save the file in your editor, then in the shell run `save` → `pdf`. No need to quit and restart — `save` always re-reads the JSON file from disk.
+## Requirements
 
-Or without the shell: `python -m src.main render --open`
+- Python 3.11+
+- `ANTHROPIC_API_KEY` (required — [get one here](https://console.anthropic.com/))
+- `GITHUB_TOKEN` (optional — raises API rate limits; needed only for `github_username` collection or private repos)
+- **PDF compiler**: [Tectonic](https://tectonic-typesetting.github.io/) (recommended) or TeX Live (`pdflatex`)
 
-Each `edit` calls Claude (`models.extractor`). You confirm changes before they are saved. By default, run `pdf` after edits to refresh the PDF; set `output.auto_compile_after_edit: true` in `config.yaml` to compile automatically.
-
-## Inline links and section reordering
-
-**Clickable text in the PDF:** Ask Claude to use markdown `[visible text](https://url)` in any text field — summary, bullets, company names, skills, etc.
-
-Example feedback:
-- *"In the LeadPool bullet, link 'LeadPool' to https://github.com/speedxgul/LeadPool"*
-- Claude should output: `Built [LeadPool](https://github.com/speedxgul/LeadPool) for EthVietnam`
-
-**Reorder entries within a section** (jobs, projects): Claude reorders the JSON array. Say explicitly: *"Move Aptos to second from bottom"* or *"Put education section before experience"*.
-
-**Reorder PDF sections** (Summary, Experience, …):
-- `edit order` in the shell, or full `edit` with *"Put Education before Experience on the resume"*
-- Stored in `section_order` in `resume.json`
-
-```bash
-> show order
-> edit order
-> Put education right after summary, then experience, projects, skills, achievements
-```
-
-Example:
-
-```text
-> pdf
-Compiled: outputs/resume.pdf
-> open
-> edit education
-> add coursework: AI/ML MIC-302, Software Engineering CSN-201
-Apply changes? [Y/n]: y
-Saved outputs/resume.json and outputs/resume.tex
-Run `pdf` to refresh the PDF.
-> pdf
-> quit
-```
-
-## Interactive review (feedback loop)
-
-After synthesis, each section is reviewed in order: `summary`, `experience`, `projects`, `skills`, `education`, `achievements`.
-
-For every section you can:
-
-
-| Key   | Action                                                                                          |
-| ----- | ----------------------------------------------------------------------------------------------- |
-| **y** | Accept the proposed version                                                                     |
-| **n** | Keep the previous/current version                                                               |
-| **f** | Press **f** then Enter, then type feedback on the next prompt (arrow keys work there) |
-
-
-You can press **f** multiple times on the same section until you're happy, then **y** to accept and move on.
-
-Example feedback:
-
-- *"Shorten to 2 lines and mention hackathon wins"*
-- *"Make the LeadPool bullet highlight Zircuit track prize"*
-- *"Move Rust to the top of Languages"*
-
-Section revisions use `models.extractor` (default: Claude Sonnet). Optional config: `revise_max_tokens` (default `4096`).
+---
 
 ## Outputs
 
-After a successful run, check `outputs/`:
+All outputs land in `outputs/`:
 
+| File | Description |
+|------|-------------|
+| `resume.draft.json` | Raw synthesizer output before review |
+| `resume.json` | Final approved resume (source of truth) |
+| `resume.tex` | Generated LaTeX source |
+| `resume.pdf` | Compiled PDF |
 
-| File                | Description                                   |
-| ------------------- | --------------------------------------------- |
-| `resume.draft.json` | Raw synthesizer output (pre-review)           |
-| `resume.json`       | Final approved structured resume              |
-| `resume.tex`        | LaTeX source                                  |
-| `resume.pdf`        | Compiled PDF (needs `tectonic` or `pdflatex`) |
-
-
-## PDF compilation
-
-Install one of:
-
-- [Tectonic](https://tectonic-typesetting.github.io/) (recommended, single binary)
-- TeX Live (`pdflatex`)
-
-If neither is installed, you'll still get `.tex` and `.json`.
-
-## LinkedIn / Twitter (no scraping)
-
-LinkedIn and Twitter don't have reliable public APIs for profile scraping. Instead:
-
-1. Open your profile in the browser
-2. Select all relevant text (Experience, About, etc.)
-3. Paste into `inputs/linkedin_profile.txt` or `inputs/twitter_profile.txt`
-
-The synthesizer treats this as first-class source data.
-
-## Links in manual_context.md
-
-Any `http(s)://` URL you write in `inputs/manual_context.md` is **automatically extracted and fetched** (markdown links and bare URLs both work). You do not need to duplicate them in `urls.txt`.
-
-
-| Link type                                | Behavior                                                  |
-| ---------------------------------------- | --------------------------------------------------------- |
-| **GitHub repo** (`github.com/user/repo`) | README fetched via GitHub API                             |
-| **Devpost / project pages**              | Page text extracted via HTTP                              |
-| **X / Twitter**                          | Not fetched (kept as reference links for the synthesizer) |
-
-
-URLs already listed in `urls.txt` are skipped when fetching from manual context to avoid duplicate requests.
-
-Example in `manual_context.md`:
-
-```markdown
-## Hackathon wins
-- EthVietnam 2025 — [leadpool](https://github.com/you/leadpool) — Devpost: https://devpost.com/software/leadpool
-```
-
-## Config reference
-
-See `config.yaml` for all options. Key fields:
-
-```yaml
-profile:
-  name: "Your Name"
-  email: "you@example.com"
-  github: "yourusername"   # or full URL
-  linkedin: "https://linkedin.com/in/you"
-
-sources:
-  github_username: "yourusername"
-  manual_context_file: "inputs/manual_context.md"
-  urls_file: "inputs/urls.txt"
-```
-
-## What to give the agent
-
-For best results, provide:
-
-1. **Current resume PDF** — baseline structure and older facts
-2. **GitHub username** — auto-fetches repos and READMEs
-3. **LinkedIn paste** — jobs, education, about
-4. **Manual context** — hackathon wins, metrics, recent projects; paste GitHub/Devpost links inline (auto-fetched)
-5. **URLs** (optional) — extra pages in `urls.txt` if not already in manual context
+---
 
 ## License
 

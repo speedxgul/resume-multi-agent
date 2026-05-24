@@ -8,6 +8,8 @@ venv/
 
 # build / output artifacts
 outputs/*.pdf
+outputs/*.tex
+outputs/*.json
 outputs/*.aux
 outputs/*.log
 outputs/*.out
@@ -15,7 +17,7 @@ outputs/*.synctex.gz
 outputs/*.fdb_latexmk
 outputs/*.fls
 
-# user inputs are private
+# user inputs are private (examples/ subfolder is committed)
 inputs/*.pdf
 inputs/linkedin_profile.txt
 inputs/twitter_profile.txt

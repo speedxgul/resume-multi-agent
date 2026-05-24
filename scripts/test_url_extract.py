@@ -5,7 +5,7 @@ from src.utils.url_fetch import extract_urls, normalize_url
 
 sample = """
 ## Hackathon wins
-- EthVietnam 2025 — [leadpool](https://github.com/octocat/Hello-World)
+- ETHGlobal Bangkok 2024 — [settlestream](https://github.com/octocat/Hello-World)
 - Devpost: https://devpost.com/software/example.
 - Tweet: https://x.com/someuser/status/1234567890
 """

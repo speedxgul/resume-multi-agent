@@ -1,7 +1,7 @@
 {% raw %}
-\documentclass[11pt,letterpaper]{article}
+\documentclass[10pt,letterpaper]{article}
 
-\usepackage[margin=0.75in]{geometry}
+\usepackage[margin=0.7in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{enumitem}
@@ -13,11 +13,11 @@
 \setlength{\parskip}{0pt}
 
 \titleformat{\section}{\large\bfseries\uppercase}{}{0pt}{}[\titlerule]
-\titlespacing*{\section}{0pt}{10pt}{4pt}
+\titlespacing*{\section}{0pt}{8pt}{3pt}
 
 \newcommand{\resumeSubheading}[4]{%
   \textbf{#1} \hfill #2 \\
-  \textit{#3} \hfill \textit{#4} \par\vspace{2pt}
+  \textit{#3} \hfill \textit{#4} \par\vspace{1pt}
 }
 
 \newcommand{\resumeItem}[1]{\item #1}
@@ -26,7 +26,8 @@
 {% endraw %}
 
 \begin{center}
-  {\LARGE \textbf{ {{ contact.name | e }} }} \\[4pt]
+  {\LARGE \textbf{ {{ contact.name | e }} }} \\[3pt]
+  {\small
   {% set links = [] %}
   {% if contact.email %}{% set _ = links.append('\\href{mailto:' ~ (contact.email | url) ~ '}{' ~ (contact.email | e) ~ '}') %}{% endif %}
   {% if contact.phone %}{% set _ = links.append(contact.phone | rich) %}{% endif %}
@@ -36,28 +37,30 @@
   {% if contact.twitter %}{% set _ = links.append('\\href{' ~ (contact.twitter | url) ~ '}{Twitter}') %}{% endif %}
   {% if contact.website %}{% set _ = links.append('\\href{' ~ (contact.website | url) ~ '}{Website}') %}{% endif %}
   {{ links | join(' \\ $|$ \\ ') }}
+  }
 \end{center}
 
-\vspace{6pt}
+\vspace{4pt}
 
+{\small
 {% for section in section_order %}
 {% if section == 'summary' and summary %}
 \section{Summary}
 {{ summary | rich }}
-\vspace{4pt}
+\vspace{2pt}
 {% elif section == 'experience' and experience %}
 \section{Experience}
 {% for job in experience %}
 \resumeSubheading{ {{ job.company | rich }} }{ {{ (job.end_date or 'Present') | e }} }{ {{ job.role | rich }} }{ {{ job.start_date | e }} }
 {% if job.location %}
-\textit{ {{ job.location | rich }} } \par\vspace{2pt}
+\textit{ {{ job.location | rich }} } \par\vspace{1pt}
 {% endif %}
-{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=2pt]{% endraw %}
+{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=1pt, itemsep=0pt]{% endraw %}
 {% for bullet in job.bullets %}
   \resumeItem{ {{ bullet | rich }} }
 {% endfor %}
 {% raw %}\end{itemize}{% endraw %}
-\vspace{4pt}
+\vspace{2pt}
 {% endfor %}
 {% elif section == 'projects' and projects %}
 \section{Projects}
@@ -70,20 +73,20 @@
 \par\textit{Tech: {% for t in project.tech %}{{ t | rich }}{% if not loop.last %}, {% endif %}{% endfor %}}
 {% endif %}
 {% if project.bullets %}
-{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=2pt]{% endraw %}
+{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=1pt, itemsep=0pt]{% endraw %}
 {% for bullet in project.bullets %}
   \resumeItem{ {{ bullet | rich }} }
 {% endfor %}
 {% raw %}\end{itemize}{% endraw %}
 {% endif %}
-\vspace{4pt}
+\vspace{2pt}
 {% endfor %}
 {% elif section == 'skills' and skills %}
 \section{Skills}
 {% for group, items in skills.items() %}
 \textbf{ {{ group | rich }}:} {% for item in items %}{{ item | rich }}{% if not loop.last %}, {% endif %}{% endfor %} \par
 {% endfor %}
-\vspace{4pt}
+\vspace{2pt}
 {% elif section == 'education' and education %}
 \section{Education}
 {% for edu in education %}
@@ -94,11 +97,11 @@ GPA: {{ edu.gpa | rich }} \par
 {% if edu.coursework %}
 Coursework: {% for c in edu.coursework %}{{ c | rich }}{% if not loop.last %}, {% endif %}{% endfor %} \par
 {% endif %}
-\vspace{4pt}
+\vspace{2pt}
 {% endfor %}
 {% elif section == 'achievements' and achievements %}
 \section{Achievements}
-{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=2pt]{% endraw %}
+{% raw %}\begin{itemize}[leftmargin=*, nosep, topsep=1pt, itemsep=0pt]{% endraw %}
 {% for item in achievements %}
   \resumeItem{
     \textbf{ {{ item.title | rich }} }{% if item.date %} ({{ item.date | e }}){% endif %}
@@ -109,6 +112,8 @@ Coursework: {% for c in edu.coursework %}{{ c | rich }}{% if not loop.last %}, {
 {% raw %}\end{itemize}{% endraw %}
 {% endif %}
 {% endfor %}
+
+}
 
 {% raw %}
 \end{document}

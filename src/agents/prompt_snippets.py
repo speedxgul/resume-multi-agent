@@ -3,7 +3,7 @@
 LINK_GUIDANCE = """
 Inline clickable links in PDF: use markdown [visible text](https://url) inside any text field
 (summary, bullets, descriptions, titles, skills, company names, etc.).
-Example: Built [LeadPool](https://github.com/user/LeadPool) for EthVietnam 2025.
+Example: Built [SettleStream](https://github.com/user/settlestream) for ETHGlobal Bangkok 2024.
 Do not use HTML. Plain URLs without markdown render as text only.
 Project/achievement `link` fields still work as whole-item URLs (shown as "link" in PDF).
 """

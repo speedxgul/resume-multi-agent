@@ -84,6 +84,10 @@ python -m src.main shell
 python -m src.main compile
 python -m src.main compile --open
 
+# Regenerate tex + PDF after editing outputs/resume.json by hand
+python -m src.main render
+python -m src.main render --open
+
 # Create starter input files
 python -m src.main init-inputs
 ```
@@ -104,11 +108,16 @@ python -m src.main shell
 |---------------|--------|
 | `pdf` / `compile` | Build `outputs/resume.pdf` from `.tex` |
 | `open` | Open the PDF in your default viewer |
-| `show [section]` | Print section JSON or overview |
+| `reload` | Reload `resume.json` from disk (after manual edits in your editor) |
+| `show [section]` | Print section JSON or overview (reloads from disk first; try `show contact`) |
 | `edit experience` | Natural-language feedback → Claude revises that section |
 | `edit` | Feedback → Claude revises the full resume |
-| `save` | Write `resume.json` + `resume.tex` |
+| `save` | **Reload** `resume.json` from disk, then write `.tex` |
 | `quit` | Exit |
+
+**Manual JSON edits** (e.g. change `contact.location`): save the file in your editor, then in the shell run `save` → `pdf`. No need to quit and restart — `save` always re-reads the JSON file from disk.
+
+Or without the shell: `python -m src.main render --open`
 
 Each `edit` calls Claude (`models.extractor`). You confirm changes before they are saved. By default, run `pdf` after edits to refresh the PDF; set `output.auto_compile_after_edit: true` in `config.yaml` to compile automatically.
 

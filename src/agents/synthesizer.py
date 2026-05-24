@@ -7,9 +7,10 @@ from typing import Any
 
 from ..schema import Contact, Resume
 from ..utils.llm import complete_structured
+from .prompt_snippets import LINK_GUIDANCE, REORDER_GUIDANCE
 
 
-SYSTEM_PROMPT = """You are a senior resume writer and career coach.
+SYSTEM_PROMPT = f"""You are a senior resume writer and career coach.
 
 Given:
 1) the user's existing resume text (may be outdated),
@@ -27,6 +28,9 @@ Rules:
 - If a section has no supported data, return an empty list or null rather than guessing.
 - Skills should be grouped logically (Languages, Frameworks, Tools, etc.).
 - Achievements should include hackathon wins, awards, publications, notable posts when supported by sources. Use embedded link page content (Devpost, GitHub README) to enrich achievement and project bullets; keep X/Twitter URLs as reference links when fetch was skipped.
+{LINK_GUIDANCE}
+{REORDER_GUIDANCE}
+- Set section_order to control PDF section sequence (default: summary, experience, projects, skills, education, achievements).
 - Return ONLY valid JSON matching the schema. No markdown fences, no commentary.
 """
 
@@ -49,12 +53,14 @@ def _build_user_prompt(
 Return the full updated resume JSON.
 Schema fields:
 - contact: name, email, phone?, location?, linkedin?, github?, twitter?, website?
+- section_order: string[] — PDF section order (summary, experience, projects, skills, education, achievements)
 - summary: string or null
 - experience: list of {{company, role, location?, start_date, end_date?, bullets[]}}
 - projects: list of {{name, description, tech[], link?, bullets[]}}
 - education: list of {{institution, degree, field?, start_date?, end_date?, gpa?, coursework[]}}
 - skills: dict[str, list[str]]
 - achievements: list of {{title, description?, date?, link?}}
+Use [label](https://...) in any text field for inline clickable links in the PDF.
 """
 
 

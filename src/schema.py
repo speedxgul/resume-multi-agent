@@ -4,7 +4,42 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+# Body sections in default PDF order (contact stays in header).
+DEFAULT_SECTION_ORDER: list[str] = [
+    "summary",
+    "experience",
+    "projects",
+    "skills",
+    "education",
+    "achievements",
+]
+
+# Human review / shell edit order (may differ from PDF order).
+REVIEWABLE_SECTIONS: list[str] = [
+    "summary",
+    "education",
+    "experience",
+    "projects",
+    "skills",
+    "achievements",
+]
+
+
+def normalize_section_order(order: list[str] | None) -> list[str]:
+    """Ensure section_order contains each body section exactly once."""
+    if not order:
+        return list(DEFAULT_SECTION_ORDER)
+
+    seen: list[str] = []
+    for name in order:
+        if name in DEFAULT_SECTION_ORDER and name not in seen:
+            seen.append(name)
+    for name in DEFAULT_SECTION_ORDER:
+        if name not in seen:
+            seen.append(name)
+    return seen
 
 
 class Contact(BaseModel):
@@ -56,6 +91,10 @@ class Resume(BaseModel):
     """Full resume payload. Sections may be empty lists if a person has none."""
 
     contact: Contact
+    section_order: list[str] = Field(
+        default_factory=lambda: list(DEFAULT_SECTION_ORDER),
+        description="Order of body sections in the PDF (summary, experience, projects, skills, education, achievements)",
+    )
     summary: str | None = None
     experience: list[Experience] = Field(default_factory=list)
     projects: list[Project] = Field(default_factory=list)
@@ -66,17 +105,13 @@ class Resume(BaseModel):
     )
     achievements: list[Achievement] = Field(default_factory=list)
 
+    @field_validator("section_order", mode="before")
+    @classmethod
+    def _normalize_order(cls, value: list[str] | None) -> list[str]:
+        return normalize_section_order(value)
+
     def section_payload(self, name: str) -> Any:
         """Return the value of a top-level section by name (for diff/review UI)."""
+        if name == "section_order":
+            return self.section_order
         return getattr(self, name)
-
-
-# Sections shown to the user during review, in display order.
-REVIEWABLE_SECTIONS: list[str] = [
-    "summary",
-    "experience",
-    "projects",
-    "skills",
-    "education",
-    "achievements",
-]

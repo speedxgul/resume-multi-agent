@@ -24,15 +24,19 @@ HELP_TEXT = """
   help              Show this help
   pdf, compile      Compile outputs/resume.tex → PDF
   open              Open the PDF in your default viewer
-  show [section]    Show section JSON (reloads from disk first)
+  show [section]    Show section JSON (reloads from disk first; try `show contact`, `show order`)
+  show order        Show PDF section order (section_order)
   reload            Reload resume.json from disk into memory
   edit <section>    Revise one section with Claude (feedback prompt)
+  edit order        Reorder PDF sections (summary, experience, …)
   edit              Revise the full resume with Claude
   save              Reload resume.json from disk, then write .tex (+ .json)
   quit, exit        Leave edit mode
 
 [dim]Tip: edit outputs/resume.json in your editor, save the file, then run[/dim]
 [dim]`save` and `pdf` here — no need to restart the shell.[/dim]
+[dim]Inline links: ask Claude to use [visible text](https://url) in any text field.[/dim]
+[dim]Reorder jobs/projects: ask Claude to move items in the array (2nd from bottom = index N-2).[/dim]
 """
 
 
@@ -128,6 +132,7 @@ def _show_overview(console: Console, resume: Resume) -> None:
     table.add_row("education", str(len(resume.education)))
     table.add_row("skills", str(len(resume.skills)))
     table.add_row("achievements", str(len(resume.achievements)))
+    table.add_row("section_order", " → ".join(resume.section_order))
     console.print(table)
 
 
@@ -188,7 +193,7 @@ def _cmd_edit_full(console: Console, state: ShellState) -> None:
         )
         return
 
-    for section in REVIEWABLE_SECTIONS:
+    for section in ["section_order", *REVIEWABLE_SECTIONS]:
         render_section_diff(
             console,
             section,
@@ -265,25 +270,29 @@ def _dispatch_line(console: Console, state: ShellState, line: str) -> bool:
             reload_from_disk(state, console)
         except Exception:
             return True
-        if arg == "contact":
+        if arg in ("order", "section_order"):
+            render_full_section(console, "section_order", state.resume.section_order)
+        elif arg == "contact":
             render_full_section(console, "contact", state.resume.contact.model_dump())
         elif arg and arg in REVIEWABLE_SECTIONS:
             render_full_section(console, arg, state.resume.section_payload(arg))
         elif arg:
             console.print(
                 f"[red]Unknown section {arg!r}.[/red] "
-                f"Valid: {', '.join(REVIEWABLE_SECTIONS)}"
+                f"Valid: order, contact, {', '.join(REVIEWABLE_SECTIONS)}"
             )
         else:
             _show_overview(console, state.resume)
         return True
 
     if cmd == "edit":
-        if arg:
+        if arg in ("order", "section_order"):
+            _cmd_edit_section(console, state, "section_order")
+        elif arg:
             if arg not in REVIEWABLE_SECTIONS:
                 console.print(
                     f"[red]Unknown section {arg!r}.[/red] "
-                    f"Valid: {', '.join(REVIEWABLE_SECTIONS)}"
+                    f"Valid: order, {', '.join(REVIEWABLE_SECTIONS)}"
                 )
                 return True
             _cmd_edit_section(console, state, arg)

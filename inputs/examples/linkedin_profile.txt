@@ -1,0 +1,72 @@
+EXAMPLE LinkedIn profile paste
+------------------------------
+HOW TO USE: Copy your actual LinkedIn profile text here, replacing this example.
+  1. Open linkedin.com → your profile
+  2. Expand every section (click "See more" in About, each Experience entry, etc.)
+  3. Select and copy each section's text and paste below
+  4. Save to inputs/linkedin_profile.txt
+
+----------------------------------------------------------
+ABOUT
+
+Senior software engineer specializing in distributed systems, DeFi infrastructure, and developer tooling. I enjoy working on hard problems at the intersection of systems engineering and cryptography.
+
+$15k+ in hackathon prizes across ETHGlobal, Solana Breakpoint, and DevConnect events.
+Currently exploring ZK proof systems and MEV-resistant protocol design.
+
+Open to: DeFi protocols, infra tooling, research-adjacent eng roles (remote or hybrid, Americas/EMEA).
+
+----------------------------------------------------------
+EXPERIENCE
+
+Senior Backend Engineer · Acme Protocol · Remote
+January 2023 – Present · 2 yrs 2 mos
+
+Acme Protocol is a decentralized perpetuals exchange on Ethereum L2 with $500M+ TVL.
+
+• Designed and implemented the core settlement layer, reducing finality time from 8s to 1.2s (35% improvement in P99 latency)
+• Led migration from monolith to event-driven microservices (Go + gRPC), enabling horizontal scaling to 50k TPS
+• Architected a permissionless liquidation bot network, replacing centralized liquidators — improved bad debt recovery 60%
+• Mentored 3 junior engineers; conducted weekly architecture reviews
+
+---
+
+Software Engineer · Big Tech Co · San Francisco, CA
+June 2021 – December 2022 · 1 yr 7 mos
+
+Full-stack engineering on internal developer productivity tooling.
+
+• Built a CI/CD analytics dashboard (React + TypeScript) adopted by 1 200+ engineers
+• Reduced median build time 25% through cache optimization and parallelization
+• Contributed to internal Go microservices framework used across 40+ services
+
+---
+
+Software Engineer Intern · Startup XYZ · New York, NY
+May 2020 – August 2020 · 4 mos
+
+• Built REST APIs in Node.js + PostgreSQL for B2B SaaS platform
+• Implemented OAuth2 social login (Google, GitHub) — reduced signup friction, conversion +18%
+
+----------------------------------------------------------
+EDUCATION
+
+Bachelor of Science, Computer Science
+State University · 2017 – 2021
+GPA: 3.8/4.0
+
+Relevant coursework: Distributed Systems, Operating Systems, Algorithms, Cryptography, Database Systems
+
+----------------------------------------------------------
+SKILLS
+
+Languages: Go, TypeScript, Python, Rust (learning), Solidity
+Frameworks: gRPC, React, Node.js, FastAPI
+Infrastructure: Docker, Kubernetes, AWS, GCP
+Blockchain: Ethereum, Solana, EVM, Foundry, Hardhat
+Tools: PostgreSQL, Redis, Kafka, Prometheus, Grafana
+
+----------------------------------------------------------
+CERTIFICATIONS
+
+AWS Certified Solutions Architect – Associate · Amazon Web Services · 2022

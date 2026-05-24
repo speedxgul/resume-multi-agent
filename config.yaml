@@ -23,11 +23,13 @@ sources:
 # Models — tweak via env vars (see .env.example) if needed.
 models:
   synthesizer: "claude-opus-4-7"          # strong reasoning for the merge step
-  extractor:   "claude-sonnet-4-5"         # cheap+fast for per-source extraction
-  max_tokens: 13000
+  extractor:   "claude-sonnet-4-5"         # section feedback revisions during review
+  max_tokens: 13000                         # synthesizer output cap
+  revise_max_tokens: 4096                  # per-section feedback revision cap
 
 # LaTeX output preferences.
 output:
   resume_basename: "resume"   # outputs/resume.tex + outputs/resume.pdf
   compile_pdf: true            # set false to skip pdflatex/tectonic step
+  auto_compile_after_edit: false  # in shell: recompile PDF after each Claude edit
   font: "Latin Modern"         # mostly cosmetic, used in template

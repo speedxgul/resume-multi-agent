@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 
 from prompt_toolkit import prompt
-from prompt_toolkit.shortcuts import confirm as pt_confirm
 from rich.console import Console
 
 # Arrow keys and other escape sequences that leak into naive stdin reads.
@@ -55,5 +54,16 @@ def ask_feedback(console: Console) -> str:
 
 
 def ask_confirm(console: Console, message: str, *, default: bool = True) -> bool:
+    """Yes/no confirm; works across prompt_toolkit versions (no default= kwarg)."""
     console.print(message)
-    return pt_confirm("", default=default)
+    suffix = " [Y/n]" if default else " [y/N]"
+    while True:
+        raw = prompt(suffix, default="y" if default else "n").strip().lower()
+        raw = clean_tty_input(raw)
+        if not raw:
+            return default
+        if raw in ("y", "yes"):
+            return True
+        if raw in ("n", "no"):
+            return False
+        console.print("[yellow]Enter y or n.[/yellow]")

@@ -1,0 +1,44 @@
+EXAMPLE Twitter/X profile paste
+---------------------------------
+HOW TO USE: Copy your actual Twitter/X bio and relevant tweets here, replacing this example.
+  - Copy your bio from your profile page
+  - Copy your pinned tweet(s)
+  - Include any notable threads or project announcements
+  - Save to inputs/twitter_profile.txt
+
+Note: Twitter/X links in manual_context.md are kept as references only (not fetched).
+      This file is plain text context fed directly to the synthesizer.
+
+----------------------------------------------------------
+BIO
+
+Building in DeFi / ZK space.
+Core infra eng @AcmeProtocol. prev @BigTechCo.
+$15k+ hackathon wins. Shipping things on Ethereum + Solana.
+https://janedoe.dev
+
+----------------------------------------------------------
+PINNED TWEET
+
+Just shipped SettleStream — permissionless batch auction settlement on Ethereum L2.
+Won 1st place DeFi Track at ETHGlobal Bangkok 2024 ($3k).
+
+What it does:
+→ Bundles limit orders into discrete auctions (Dutch auction style)
+→ Solvers compete on-chain, best price wins
+→ Fully permissionless, no centralized sequencer
+
+Repo: https://github.com/you/settlestream
+Thread: [1/8] Here's how the settlement math works...
+
+----------------------------------------------------------
+NOTABLE TWEETS / THREADS
+
+"MEV-resistant AMMs: why most 'solutions' don't work and what actually does"
+Full thread: https://twitter.com/you/status/1234567890
+
+"6 months building full-time in DeFi — what I learned"
+(2.3k impressions, reshared by @notable_account)
+
+"Just merged my 3rd PR into @someorg — permissionless oracle fallback circuit breaker.
+If you're building on SomeLib, this fixes the stale price edge case."

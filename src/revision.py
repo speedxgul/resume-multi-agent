@@ -9,6 +9,9 @@ from rich.panel import Panel
 
 from .agents.section_reviser import revise_section
 from .schema import REVIEWABLE_SECTIONS, Resume
+
+# Sections + PDF layout order editable via `edit <name>` / `edit order`
+EDITABLE_SECTIONS: list[str] = REVIEWABLE_SECTIONS + ["section_order"]
 from .utils.diff import render_full_section, render_section_diff
 from .utils.prompts import ask_confirm
 
@@ -50,9 +53,9 @@ def apply_section_edit_with_confirm(
     confirm_message: str = "Apply changes?",
 ) -> Resume | None:
     """Revise one section from feedback; show diff; return updated resume if user confirms."""
-    if section not in REVIEWABLE_SECTIONS:
+    if section not in EDITABLE_SECTIONS:
         raise ValueError(
-            f"Unknown section {section!r}. Valid: {', '.join(REVIEWABLE_SECTIONS)}"
+            f"Unknown section {section!r}. Valid: {', '.join(EDITABLE_SECTIONS)}, or use `edit order`"
         )
 
     old_value = (

@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .schema import Resume
 from .utils.latex import compile_pdf, escape, escape_url
+from .utils.richtext import render_richtext
 
 
 def _env() -> Environment:
@@ -21,6 +22,7 @@ def _env() -> Environment:
     )
     env.filters["e"] = escape
     env.filters["url"] = escape_url
+    env.filters["rich"] = render_richtext
     return env
 
 
@@ -28,6 +30,7 @@ def render_latex(resume: Resume) -> str:
     template = _env().get_template("resume.tex.j2")
     return template.render(
         contact=resume.contact,
+        section_order=resume.section_order,
         summary=resume.summary,
         experience=resume.experience,
         projects=resume.projects,

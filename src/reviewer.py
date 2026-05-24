@@ -6,11 +6,11 @@ from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Confirm, Prompt
 
 from .agents.section_reviser import revise_section
 from .schema import REVIEWABLE_SECTIONS, Resume
 from .utils.diff import render_full_section, render_section_diff
+from .utils.prompts import ask_confirm, ask_feedback, ask_ynf
 
 
 def _empty_resume_from_contact(resume: Resume) -> Resume:
@@ -40,12 +40,7 @@ def _review_one_section(
     while True:
         render_section_diff(console, section, baseline_value, candidate)
 
-        choice = Prompt.ask(
-            f"[bold]{section}[/bold] — [green]y[/green]=accept  "
-            f"[red]n[/red]=reject  [yellow]f[/yellow]=give feedback",
-            choices=["y", "n", "f"],
-            default="y",
-        )
+        choice = ask_ynf(console, section, default="y")
 
         if choice == "y":
             approved = _apply_section(approved, section, candidate)
@@ -56,9 +51,7 @@ def _review_one_section(
             console.print(f"[dim]Kept previous {section}.[/dim]")
             return approved, baseline_value
 
-        feedback = Prompt.ask(
-            "[cyan]Your feedback[/cyan] (what should change?)",
-        ).strip()
+        feedback = ask_feedback(console)
         if not feedback:
             console.print("[yellow]Empty feedback — try again.[/yellow]")
             continue
@@ -124,10 +117,9 @@ def review_resume(
             config=config,
             console=console,
         )
-        # Keep proposed in sync for downstream sections that read approved context
         proposed = _apply_section(proposed, section, approved.section_payload(section))
 
-    if Confirm.ask("\nWrite final resume files?", default=True):
+    if ask_confirm(console, "\nWrite final resume files?", default=True):
         return approved
 
     raise SystemExit("Review cancelled — no files written.")

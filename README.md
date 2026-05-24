@@ -71,11 +71,60 @@ python -m src.main update --pdf ~/Downloads/my_resume.pdf
 # Skip human review (accept all synthesizer changes)
 python -m src.main update --skip-review
 
-# Skip PDF compilation (only .tex + .json)
+# Skip PDF compilation during update (compile later in shell)
 python -m src.main update --no-compile
+
+# Enter post-render edit shell after update
+python -m src.main update --interactive
+
+# Edit an existing resume anytime (after reviewing PDF)
+python -m src.main shell
+
+# Compile tex to PDF only
+python -m src.main compile
+python -m src.main compile --open
 
 # Create starter input files
 python -m src.main init-inputs
+```
+
+## Post-render edit shell
+
+After `update` writes `outputs/resume.json` and `outputs/resume.tex`, use **edit mode** to compile PDF on demand and apply Claude-powered changes without re-running the full pipeline.
+
+```bash
+# Generate tex/json, then drop into edit shell
+python -m src.main update --no-compile --interactive
+
+# Or open shell later (e.g. after reviewing the PDF)
+python -m src.main shell
+```
+
+| Shell command | Action |
+|---------------|--------|
+| `pdf` / `compile` | Build `outputs/resume.pdf` from `.tex` |
+| `open` | Open the PDF in your default viewer |
+| `show [section]` | Print section JSON or overview |
+| `edit experience` | Natural-language feedback → Claude revises that section |
+| `edit` | Feedback → Claude revises the full resume |
+| `save` | Write `resume.json` + `resume.tex` |
+| `quit` | Exit |
+
+Each `edit` calls Claude (`models.extractor`). You confirm changes before they are saved. By default, run `pdf` after edits to refresh the PDF; set `output.auto_compile_after_edit: true` in `config.yaml` to compile automatically.
+
+Example:
+
+```text
+> pdf
+Compiled: outputs/resume.pdf
+> open
+> edit education
+> add coursework: AI/ML MIC-302, Software Engineering CSN-201
+Apply changes? [Y/n]: y
+Saved outputs/resume.json and outputs/resume.tex
+Run `pdf` to refresh the PDF.
+> pdf
+> quit
 ```
 
 ## Interactive review (feedback loop)

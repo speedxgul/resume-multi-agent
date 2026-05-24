@@ -7,7 +7,7 @@ from typing import Any
 from rich.console import Console
 from rich.panel import Panel
 
-from .agents.section_reviser import revise_section
+from .revision import apply_section, apply_section_edit_with_confirm
 from .schema import REVIEWABLE_SECTIONS, Resume
 from .utils.diff import render_full_section, render_section_diff
 from .utils.prompts import ask_confirm, ask_feedback, ask_ynf
@@ -16,12 +16,6 @@ from .utils.prompts import ask_confirm, ask_feedback, ask_ynf
 def _empty_resume_from_contact(resume: Resume) -> Resume:
     """Baseline for diffing when we only have synthesized output."""
     return Resume(contact=resume.contact)
-
-
-def _apply_section(resume: Resume, section: str, value: Any) -> Resume:
-    data = resume.model_dump()
-    data[section] = value
-    return Resume.model_validate(data)
 
 
 def _review_one_section(
@@ -35,7 +29,6 @@ def _review_one_section(
 ) -> tuple[Resume, Any]:
     """Review a single section with accept / reject / feedback loop."""
     candidate = proposed_value
-    feedback_history: list[str] = []
 
     while True:
         render_section_diff(console, section, baseline_value, candidate)
@@ -43,11 +36,11 @@ def _review_one_section(
         choice = ask_ynf(console, section, default="y")
 
         if choice == "y":
-            approved = _apply_section(approved, section, candidate)
+            approved = apply_section(approved, section, candidate)
             return approved, candidate
 
         if choice == "n":
-            approved = _apply_section(approved, section, baseline_value)
+            approved = apply_section(approved, section, baseline_value)
             console.print(f"[dim]Kept previous {section}.[/dim]")
             return approved, baseline_value
 
@@ -56,29 +49,20 @@ def _review_one_section(
             console.print("[yellow]Empty feedback — try again.[/yellow]")
             continue
 
-        feedback_history.append(feedback)
-        console.print("[dim]Sending feedback to Claude...[/dim]")
-
-        try:
-            revised = revise_section(
-                section=section,
-                current_value=candidate,
-                feedback=feedback,
-                config=config,
-                resume_context=approved,
-                prior_feedback=feedback_history[:-1] or None,
-            )
-        except Exception as exc:
-            console.print(
-                Panel(
-                    f"Could not apply feedback: {exc}\nTry rephrasing or accept/reject.",
-                    title="Revision failed",
-                    border_style="red",
-                )
-            )
+        updated = apply_section_edit_with_confirm(
+            console=console,
+            resume=approved,
+            section=section,
+            feedback=feedback,
+            config=config,
+            current_value=candidate,
+            confirm_message="Apply this revision to the draft?",
+        )
+        if updated is None:
             continue
 
-        candidate = revised
+        candidate = updated.section_payload(section)
+        approved = updated
         console.print("[green]Updated — review the diff below.[/green]")
         render_full_section(console, f"{section} (revised)", candidate)
 
@@ -117,7 +101,7 @@ def review_resume(
             config=config,
             console=console,
         )
-        proposed = _apply_section(proposed, section, approved.section_payload(section))
+        proposed = apply_section(proposed, section, approved.section_payload(section))
 
     if ask_confirm(console, "\nWrite final resume files?", default=True):
         return approved

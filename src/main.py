@@ -9,9 +9,10 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
+from src.cli.edit_shell import run_edit_shell
 from src.config import load_config
 from src.graph import run_pipeline
-from src.renderer import write_outputs
+from src.renderer import compile_resume_pdf, write_outputs
 from src.reviewer import review_resume
 from src.schema import Resume
 from src.utils.pdf import extract_text
@@ -21,6 +22,18 @@ app = typer.Typer(
     help="Multi-agent resume updater: GitHub, LinkedIn paste, URLs, manual context -> LaTeX/PDF.",
 )
 console = Console()
+
+
+def _output_paths(cfg: dict) -> tuple[Path, Path, Path, str]:
+    out_cfg = cfg.get("output", {})
+    out_dir = Path("outputs")
+    basename = out_cfg.get("resume_basename", "resume")
+    return (
+        out_dir,
+        out_dir / f"{basename}.json",
+        out_dir / f"{basename}.tex",
+        basename,
+    )
 
 
 @app.command()
@@ -44,6 +57,12 @@ def update(
         False,
         "--no-compile",
         help="Write .tex and .json only; skip PDF compilation.",
+    ),
+    interactive: bool = typer.Option(
+        False,
+        "--interactive",
+        "-i",
+        help="After rendering, enter edit mode (compile PDF, Claude edits on demand).",
     ),
 ):
     """Run the full pipeline: collect -> synthesize -> review -> render."""
@@ -80,9 +99,7 @@ def update(
         console.print("[red]Synthesizer did not return a resume.[/red]")
         raise typer.Exit(code=1)
 
-    # Save raw synthesizer output for inspection.
-    out_cfg = cfg.get("output", {})
-    out_dir = Path("outputs")
+    out_dir, json_path, _, basename = _output_paths(cfg)
     out_dir.mkdir(exist_ok=True)
     draft_path = out_dir / "resume.draft.json"
     draft_path.write_text(
@@ -99,13 +116,70 @@ def update(
     paths = write_outputs(
         final,
         output_dir=out_dir,
-        basename=out_cfg.get("resume_basename", "resume"),
-        compile=not no_compile and bool(out_cfg.get("compile_pdf", True)),
+        basename=basename,
+        compile=not no_compile and bool(cfg.get("output", {}).get("compile_pdf", True)),
     )
 
     console.print("\n[bold green]Done![/bold green]")
     for kind, path in paths.items():
         console.print(f"  {kind}: {path}")
+
+    if interactive:
+        run_edit_shell(cfg, json_path=json_path, console=console)
+
+
+@app.command()
+def shell(
+    config: Path = typer.Option(
+        Path("config.yaml"),
+        "--config",
+        help="Path to config.yaml.",
+    ),
+    json_path: Path = typer.Option(
+        Path("outputs/resume.json"),
+        "--json",
+        help="Resume JSON to load.",
+    ),
+):
+    """Interactive edit mode on an existing resume (compile PDF, Claude edits)."""
+    cfg = load_config(config)
+    run_edit_shell(cfg, json_path=json_path, console=console)
+
+
+@app.command(name="compile")
+def compile_cmd(
+    config: Path = typer.Option(
+        Path("config.yaml"),
+        "--config",
+        help="Path to config.yaml.",
+    ),
+    open_pdf: bool = typer.Option(
+        False,
+        "--open",
+        help="Open the PDF after compiling.",
+    ),
+):
+    """Compile outputs/resume.tex to PDF (no Claude calls)."""
+    cfg = load_config(config)
+    _, _, tex_path, _ = _output_paths(cfg)
+
+    if not tex_path.exists():
+        console.print(f"[red]TeX file not found: {tex_path}[/red]")
+        raise typer.Exit(code=1)
+
+    try:
+        pdf = compile_resume_pdf(tex_path, tex_path.parent)
+    except Exception as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"[green]Compiled:[/green] {pdf}")
+
+    if open_pdf:
+        from src.cli.edit_shell import _open_path
+
+        _open_path(pdf)
+        console.print("[dim]Opened PDF.[/dim]")
 
 
 @app.command()
@@ -156,7 +230,8 @@ def init_inputs():
         "1. Copy .env.example -> .env and set ANTHROPIC_API_KEY\n"
         "2. Fill in config.yaml (profile + github_username)\n"
         "3. Put your current resume PDF at inputs/resume.pdf\n"
-        "4. Run: python -m src.main update"
+        "4. Run: python -m src.main update\n"
+        "5. After PDF review: python -m src.main shell"
     )
 
 

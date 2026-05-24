@@ -37,6 +37,23 @@ def render_latex(resume: Resume) -> str:
     )
 
 
+def load_resume_json(path: str | Path) -> Resume:
+    """Load a resume from a JSON file written by write_outputs."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return Resume.model_validate(data)
+
+
+def compile_resume_pdf(tex_path: Path, output_dir: Path | None = None) -> Path:
+    """Compile .tex to PDF; raises if no compiler or compilation fails."""
+    out = output_dir or tex_path.parent
+    pdf = compile_pdf(tex_path.resolve(), out.resolve())
+    if pdf is None:
+        raise RuntimeError(
+            "No LaTeX compiler found. Install tectonic or TeX Live (pdflatex)."
+        )
+    return pdf
+
+
 def write_outputs(
     resume: Resume,
     *,

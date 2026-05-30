@@ -4,10 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from .crustdata import collect_crustdata
 from .github import collect_github
 from .manual import collect_linkedin, collect_manual_context, collect_twitter
 from .synthesizer import synthesize_resume
 from .urls import collect_urls
+
+
+def node_collect_crustdata(state: dict[str, Any]) -> dict[str, Any]:
+    return {"sources": collect_crustdata(state["config"])}
 
 
 def node_collect_github(state: dict[str, Any]) -> dict[str, Any]:

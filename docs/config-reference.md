@@ -110,8 +110,16 @@ These fields populate the **resume header** (contact line). They are never chang
 | `twitter_profile_file` | `inputs/twitter_profile.txt` | Path to pasted Twitter/X text |
 | `manual_context_file` | `inputs/manual_context.md` | Path to manual notes; embedded URLs are auto-fetched |
 | `urls_file` | `inputs/urls.txt` | Path to extra URLs file |
+| `crustdata_enabled` | `false` | Enable Crustdata Person Enrich for structured LinkedIn data |
+| `crustdata_profile_url` | `""` | Override profile URL; defaults to `profile.linkedin` |
+| `crustdata_use_email` | `false` | Look up profile by `profile.email` when no LinkedIn URL is set |
+| `crustdata_use_live` | `false` | Use live enrich endpoint (plan-gated; ~7 credits vs ~1 cached) |
+| `crustdata_min_similarity_score` | `0.8` | Minimum match confidence for email reverse lookup |
+| `crustdata_fields` | *(defaults)* | Optional list of Crustdata field sections to request |
 
 **GitHub token:** Set `GITHUB_TOKEN` in `.env` for higher rate limits (5 000/hr vs 60/hr unauthenticated). Required for private repos (needs `repo` scope).
+
+**Crustdata:** Set `CRUSTDATA_API_KEY` in `.env` and `crustdata_enabled: true` in config. Uses `profile.linkedin` by default (~1 credit per run for cached enrich). See [Crustdata pricing](https://docs.crustdata.com/general/pricing.md).
 
 ---
 

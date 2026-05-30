@@ -27,3 +27,6 @@ PyGithub>=2.3.0
 Jinja2>=3.1.0
 python-dotenv>=1.0.0
 PyYAML>=6.0
+
+# Crustdata MCP client
+mcp>=1.0.0

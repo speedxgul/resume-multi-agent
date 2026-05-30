@@ -70,7 +70,7 @@ You do **not** need to duplicate URLs in `urls.txt` if you've already added them
 
 Paste the raw text of your LinkedIn profile here. No login, no API — just copy-paste from your browser.
 
-**Alternative:** Enable Crustdata in `config.yaml` (`crustdata_enabled: true`) and set `CRUSTDATA_API_KEY` in `.env`. The collector fetches a structured profile from your `profile.linkedin` URL automatically (~1 credit per run). You can skip this paste file when Crustdata succeeds; the synthesizer prefers Crustdata data over pasted text when both are present.
+**Alternative:** Enable Crustdata in `config.yaml` (`crustdata_enabled: true`) and set `CRUSTDATA_API_KEY` in `.env`. The collector calls the Crustdata MCP server (`crustdata_people_enrich`) using your `profile.linkedin` URL (~1 credit per run). When `crustdata_person.status` is `ok`, the synthesizer treats that structured data as authoritative over pasted LinkedIn text. You can skip this paste file when Crustdata succeeds.
 
 ### How to copy your LinkedIn text
 
@@ -184,12 +184,34 @@ sources:
 
 ---
 
+## Job targeting (via `config.yaml`)
+
+Separate from the input files — configured under the `target:` block. When `target.enabled: true`, the job search collector queries Crustdata MCP for real postings matching your criteria and passes them to the synthesizer as `target_jobs`.
+
+```yaml
+target:
+  enabled: true
+  titles: ["Backend Engineer", "Software Engineer"]
+  location_country: "India"      # optional
+  workplace_type: "Remote"       # optional: Remote, Hybrid, On-site
+  category: "Engineering"        # optional
+  max_jobs: 15                   # cap credits (~1 per job)
+```
+
+The synthesizer uses recurring keywords from those job descriptions to tailor wording and skill ordering. It will **not** invent employers, skills, or experience you don't already have.
+
+Requires `CRUSTDATA_API_KEY` in `.env`. See [Config Reference](config-reference.md) for all `target:` fields.
+
+---
+
 ## Priority and conflicts
 
 When the synthesizer sees conflicting information (e.g. different dates for the same job in your PDF vs LinkedIn paste), it follows this priority:
 
 1. `profile:` block in `config.yaml` — **always wins** for contact info
-2. Fresh sources (LinkedIn, manual context, GitHub, URLs) — preferred over old PDF text for facts
-3. Existing PDF text — used as baseline structure and for anything not covered by other sources
+2. Crustdata person enrich (`crustdata_person.person_data`) — authoritative for employment, education, skills when status is `ok`
+3. Fresh sources (manual context, GitHub, URLs, pasted LinkedIn/Twitter) — preferred over old PDF text for facts
+4. Target job postings (`target_jobs`) — used for **wording and emphasis only**, not for inventing new facts
+5. Existing PDF text — used as baseline structure and for anything not covered by other sources
 
 You can always correct mistakes during interactive review or in the edit shell.

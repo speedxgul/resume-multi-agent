@@ -54,7 +54,7 @@ python -m src.main update --config configs/work.yaml
 ### What it does
 
 1. Extracts text from the resume PDF
-2. Runs five collectors in parallel (GitHub, LinkedIn, Twitter, manual context, URLs)
+2. Runs seven collectors in parallel (Crustdata person enrich, job search, GitHub, LinkedIn, Twitter, manual context, URLs). Crustdata and job search are skipped when disabled in config.
 3. Calls Claude Opus to synthesize everything into structured resume JSON → `outputs/resume.draft.json`
 4. Runs interactive review (unless `--skip-review`)
 5. Writes `outputs/resume.json`, `outputs/resume.tex`
@@ -191,6 +191,7 @@ These are read from `.env` (via `python-dotenv`) at startup:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | Claude API key |
+| `CRUSTDATA_API_KEY` | No | Crustdata API key — person enrich and job search via MCP |
 | `GITHUB_TOKEN` | No | GitHub PAT — higher rate limits; needed for private repos |
 | `RESUME_AGENT_SYNTHESIZER_MODEL` | No | Override synthesizer model (default: `claude-opus-4-7`) |
 | `RESUME_AGENT_EXTRACTOR_MODEL` | No | Override reviser model (default: `claude-sonnet-4-5`) |

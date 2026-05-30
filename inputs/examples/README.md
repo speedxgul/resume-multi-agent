@@ -13,6 +13,8 @@ Then put your resume PDF at `inputs/resume.pdf`.
 
 See [docs/inputs-guide.md](../../docs/inputs-guide.md) for details on what to put in each file.
 
+Optional: enable `sources.crustdata_enabled` and/or `target.enabled` in `config.yaml` for Crustdata MCP enrichment and job-targeted tailoring (see [config reference](../../docs/config-reference.md)).
+
 | File | What it is |
 |------|-----------|
 | `manual_context.md` | Free-form notes, hackathon wins, project URLs (most important file) |

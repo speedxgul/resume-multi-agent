@@ -70,6 +70,8 @@ You do **not** need to duplicate URLs in `urls.txt` if you've already added them
 
 Paste the raw text of your LinkedIn profile here. No login, no API — just copy-paste from your browser.
 
+**Alternative:** Enable Crustdata in `config.yaml` (`crustdata_enabled: true`) and set `CRUSTDATA_API_KEY` in `.env`. The collector fetches a structured profile from your `profile.linkedin` URL automatically (~1 credit per run). You can skip this paste file when Crustdata succeeds; the synthesizer prefers Crustdata data over pasted text when both are present.
+
 ### How to copy your LinkedIn text
 
 1. Open [linkedin.com](https://linkedin.com) → your profile

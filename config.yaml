@@ -20,6 +20,18 @@ sources:
   manual_context_file: "inputs/manual_context.md"        # free-form notes; http(s) links here are auto-fetched
   urls_file: "inputs/urls.txt"                           # one URL per line (optional if links are in manual_context.md)
 
+  # Crustdata Person Enrich — structured LinkedIn profile (optional; requires CRUSTDATA_API_KEY)
+  crustdata_enabled: false
+  crustdata_profile_url: ""      # optional override; defaults to profile.linkedin
+  crustdata_use_email: false     # lookup by profile.email when no LinkedIn URL is set
+  crustdata_use_live: false      # use live enrich endpoint (plan-gated; costs more credits)
+  crustdata_min_similarity_score: 0.8  # for email lookup only
+  # crustdata_fields:            # optional; defaults to experience, education, skills, etc.
+  #   - basic_profile
+  #   - experience
+  #   - education
+  #   - skills
+
 # Models — tweak via env vars (see .env.example) if needed.
 models:
   synthesizer: "claude-opus-4-7"          # strong reasoning for the merge step

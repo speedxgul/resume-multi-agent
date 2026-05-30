@@ -1,9 +1,9 @@
 # Resume Agent
 
-Multi-agent resume updater built with **LangGraph** and **Claude**. Pulls fresh data from GitHub, pasted LinkedIn/Twitter text, manual notes, and URLs — merges with your existing PDF — lets you review section-by-section — then renders a polished **LaTeX + PDF**.
+Multi-agent resume updater built with **LangGraph** and **Claude**. Pulls fresh data from GitHub, Crustdata (optional structured LinkedIn), pasted LinkedIn/Twitter text, manual notes, and URLs — merges with your existing PDF — lets you review section-by-section — then renders a polished **LaTeX + PDF**.
 
 ```
-PDF + GitHub + LinkedIn + URLs → [Collectors] → Claude Synthesizer → Review → LaTeX/PDF
+PDF + GitHub + Crustdata/LinkedIn + URLs → [Collectors] → Claude Synthesizer → Review → LaTeX/PDF
 ```
 
 ---

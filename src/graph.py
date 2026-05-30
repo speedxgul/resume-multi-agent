@@ -5,6 +5,7 @@ from __future__ import annotations
 from langgraph.graph import END, START, StateGraph
 
 from .agents.nodes import (
+    node_collect_crustdata,
     node_collect_github,
     node_collect_linkedin,
     node_collect_manual,
@@ -18,6 +19,7 @@ from .state import GraphState
 def build_graph():
     graph = StateGraph(GraphState)
 
+    graph.add_node("collect_crustdata", node_collect_crustdata)
     graph.add_node("collect_github", node_collect_github)
     graph.add_node("collect_linkedin", node_collect_linkedin)
     graph.add_node("collect_twitter", node_collect_twitter)
@@ -27,6 +29,7 @@ def build_graph():
 
     # Fan-out from START to all collectors in parallel.
     for node in (
+        "collect_crustdata",
         "collect_github",
         "collect_linkedin",
         "collect_twitter",

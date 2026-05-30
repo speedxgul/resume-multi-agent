@@ -22,6 +22,7 @@ produce an updated resume as JSON matching the provided schema.
 Rules:
 - Preserve factual accuracy. Do not invent employers, degrees, dates, or metrics.
 - Prefer newer information from sources over stale resume text when they conflict.
+- When `crustdata_person.status` is `ok`, treat its `person_data` as the authoritative source for employment, education, skills, certifications, and honors (over pasted LinkedIn text).
 - Keep bullets concise, impact-oriented, and ATS-friendly (strong verbs, quantified outcomes when available).
 - Merge duplicate projects/experience entries instead of repeating them.
 - Use static profile contact fields exactly for contact info (name, email, links).

@@ -1,9 +1,9 @@
 # Resume Agent
 
-Multi-agent resume updater built with **LangGraph** and **Claude**. Pulls fresh data from GitHub, Crustdata (optional structured LinkedIn), pasted LinkedIn/Twitter text, manual notes, and URLs — merges with your existing PDF — lets you review section-by-section — then renders a polished **LaTeX + PDF**.
+Multi-agent resume updater built with **LangGraph** and **Claude**. Pulls fresh data from GitHub, Crustdata MCP (LinkedIn enrich + optional job targeting), pasted LinkedIn/Twitter text, manual notes, and URLs — merges with your existing PDF — lets you review section-by-section — then renders a polished **LaTeX + PDF**.
 
 ```
-PDF + GitHub + Crustdata/LinkedIn + URLs → [Collectors] → Claude Synthesizer → Review → LaTeX/PDF
+PDF + GitHub + Crustdata MCP + URLs → [Collectors] → Claude Synthesizer → Review → LaTeX/PDF
 ```
 
 ---
@@ -68,6 +68,7 @@ flowchart LR
 |-------|------|
 | GitHub collector | Repos, languages, README excerpts via GitHub API |
 | LinkedIn loader | Reads pasted profile text |
+| Crustdata MCP | Person enrich + optional job-search tailoring via [mcp.crustdata.com](https://mcp.crustdata.com/mcp) |
 | Twitter loader | Reads pasted bio / pinned tweets |
 | Manual context | Hackathon wins, recent projects, free-form notes; auto-fetches embedded URLs |
 | URL fetcher | Fetches Devpost, blogs, project pages |
@@ -78,6 +79,7 @@ flowchart LR
 
 ## Key Features
 
+- **Job-targeted tailoring** — enable `target:` in config to align resume keywords with real job postings (via Crustdata MCP)
 - **Full pipeline in one command** — `update` collects, synthesizes, reviews, and renders
 - **Interactive review** — approve/reject/refine each section with natural-language feedback before saving
 - **Edit shell** — post-render REPL: compile PDF on demand, Claude edits, instant section reordering

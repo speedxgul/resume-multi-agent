@@ -26,11 +26,29 @@ sources:
   crustdata_use_email: false     # lookup by profile.email when no LinkedIn URL is set
   crustdata_use_live: false      # use live enrich endpoint (plan-gated; costs more credits)
   crustdata_min_similarity_score: 0.8  # for email lookup only
-  # crustdata_fields:            # optional; defaults to experience, education, skills, etc.
-  #   - basic_profile
-  #   - experience
-  #   - education
-  #   - skills
+  crustdata_fields:
+    - basic_profile
+    - experience
+    - education
+    - skills
+    - honors
+    - social_handles
+
+# Crustdata MCP transport (default). Set transport: rest to use direct REST API.
+crustdata:
+  mcp_url: "https://mcp.crustdata.com/mcp"
+  transport: "mcp"   # mcp | rest
+
+# Target roles for job-search tailoring (Crustdata MCP job_search).
+target:
+  enabled: false
+  titles: ["Backend Engineer", "Software Engineer"]
+  category: ""              # optional, e.g. "Engineering"
+  workplace_type: ""        # optional: Remote, Hybrid, On-site
+  location_country: ""        # optional, e.g. "India"
+  industries: []              # optional
+  company_domains: []         # optional
+  max_jobs: 15
 
 # Models — tweak via env vars (see .env.example) if needed.
 models:

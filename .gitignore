@@ -23,7 +23,7 @@ inputs/linkedin_profile.txt
 inputs/twitter_profile.txt
 inputs/manual_context.md
 inputs/urls.txt
-
+linkedin_raw_.txt
 # cache from source collectors
 .cache/
 

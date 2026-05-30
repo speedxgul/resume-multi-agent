@@ -119,7 +119,35 @@ These fields populate the **resume header** (contact line). They are never chang
 
 **GitHub token:** Set `GITHUB_TOKEN` in `.env` for higher rate limits (5 000/hr vs 60/hr unauthenticated). Required for private repos (needs `repo` scope).
 
-**Crustdata:** Set `CRUSTDATA_API_KEY` in `.env` and `crustdata_enabled: true` in config. Uses `profile.linkedin` by default (~1 credit per run for cached enrich). See [Crustdata pricing](https://docs.crustdata.com/general/pricing.md).
+**Crustdata:** Set `CRUSTDATA_API_KEY` in `.env` and `crustdata_enabled: true` in config. Person enrich uses the Crustdata MCP server by default (`crustdata.transport: mcp`). Set `transport: rest` to use direct REST API instead. See [Crustdata MCP docs](https://docs.crustdata.com/general/mcp).
+
+---
+
+### `crustdata`
+
+| Field | Default | Notes |
+|-------|---------|-------|
+| `mcp_url` | `https://mcp.crustdata.com/mcp` | Crustdata MCP server endpoint |
+| `transport` | `mcp` | `mcp` (default) or `rest` for direct REST API |
+
+---
+
+### `target`
+
+Job-search tailoring via Crustdata MCP `crustdata_job_search`. When enabled, the synthesizer aligns resume wording/skills to recurring keywords in matching job descriptions (never fabricates experience).
+
+| Field | Default | Notes |
+|-------|---------|-------|
+| `enabled` | `false` | Enable target job search during `update` |
+| `titles` | `[]` | Role titles to search (OR match, fuzzy contains) |
+| `category` | `""` | Optional job category filter, e.g. `Engineering` |
+| `workplace_type` | `""` | Optional: `Remote`, `Hybrid`, `On-site` |
+| `location_country` | `""` | Optional country filter, e.g. `India` |
+| `industries` | `[]` | Optional company industry filter |
+| `company_domains` | `[]` | Optional company domain filter |
+| `max_jobs` | `15` | Max postings to fetch (capped at 100) |
+
+**Credits:** ~1 credit per job returned. Set `max_jobs` conservatively.
 
 ---
 

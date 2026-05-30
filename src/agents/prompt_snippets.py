@@ -8,6 +8,15 @@ Do not use HTML. Plain URLs without markdown render as text only.
 Project/achievement `link` fields still work as whole-item URLs (shown as "link" in PDF).
 """
 
+TARGET_JOBS_GUIDANCE = """
+Job targeting (when target_jobs.status is ok):
+- Treat the job postings as the target audience for this resume.
+- Emphasize and phrase genuinely-present experience/skills using recurring terminology
+  and keywords from the job descriptions; reorder skill groups to surface in-demand ones first.
+- NEVER invent employers, roles, skills, tools, or metrics the candidate does not already have.
+  Tailoring means emphasis and wording only — not new facts.
+"""
+
 REORDER_GUIDANCE = """
 Reordering:
 - Items within a section (jobs, projects, bullets): reorder the JSON array — first entry appears first.

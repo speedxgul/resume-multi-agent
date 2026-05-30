@@ -12,6 +12,7 @@ This guide walks you from zero to a compiled, reviewed PDF resume.
 | Anthropic API key | [console.anthropic.com](https://console.anthropic.com/) — Claude Opus + Sonnet are used |
 | PDF compiler | [Tectonic](https://tectonic-typesetting.github.io/) (recommended) or TeX Live (`pdflatex`) |
 | GitHub PAT | Optional — only needed for `github_username` collection or private repos |
+| Crustdata API key | Optional — for structured LinkedIn enrich and job targeting via MCP |
 
 ### Install Tectonic (macOS)
 
@@ -50,6 +51,9 @@ ANTHROPIC_API_KEY=sk-ant-...        # required
 
 # Optional — only needed if you set github_username in config.yaml
 GITHUB_TOKEN=ghp_...
+
+# Optional — Crustdata MCP (person enrich + job targeting)
+CRUSTDATA_API_KEY=...
 ```
 
 > `.env` is gitignored. Never commit it.
@@ -79,9 +83,28 @@ sources:
   github_username: "janedoe"       # leave empty to skip repo scanning
   github_max_repos: 30
   github_include_readmes: 5        # fetch READMEs for top N repos
+
+  # Optional — structured LinkedIn via Crustdata MCP (~1 credit/run)
+  crustdata_enabled: true
+  crustdata_fields:
+    - basic_profile
+    - experience
+    - education
+    - skills
+    - social_handles
 ```
 
-> See [Config Reference](config-reference.md) for every field.
+Optionally enable **job-targeted tailoring** — the agent searches real job postings and aligns resume keywords to them (never fabricates experience):
+
+```yaml
+target:
+  enabled: true
+  titles: ["Backend Engineer", "Software Engineer"]
+  location_country: "India"   # optional filter
+  max_jobs: 15
+```
+
+Crustdata transport defaults to MCP. See [Config Reference](config-reference.md) for every field.
 
 ---
 
@@ -119,8 +142,24 @@ python -m src.main update
 
 What happens:
 
+```mermaid
+flowchart TD
+  PDF[Extract PDF text] --> Collect
+  Collect[7 collectors in parallel] --> Synth
+  CD[Crustdata MCP enrich] --> Collect
+  Jobs[Job search MCP] --> Collect
+  GH[GitHub] --> Collect
+  LI[LinkedIn paste] --> Collect
+  TW[Twitter paste] --> Collect
+  MC[Manual context] --> Collect
+  URL[URLs] --> Collect
+  Synth[Claude Opus synthesizer] --> Draft[resume.draft.json]
+  Draft --> Review[Interactive review]
+  Review --> Render[LaTeX + PDF]
+```
+
 1. **Extract** — text is pulled from your PDF
-2. **Collect** — all five collectors run in parallel (GitHub, LinkedIn, Twitter, manual context, URLs)
+2. **Collect** — seven collectors run in parallel (Crustdata person enrich, job search, GitHub, LinkedIn, Twitter, manual context, URLs). Job search is skipped unless `target.enabled: true`.
 3. **Synthesize** — Claude Opus merges everything into a structured resume JSON (`outputs/resume.draft.json`)
 4. **Review** — you see each section diff and choose: accept / reject / give feedback
 5. **Render** — approved resume is written to `outputs/resume.json`, `resume.tex`, `resume.pdf`
@@ -203,6 +242,17 @@ If neither is installed, you'll still get `.tex` and `.json` — you can compile
 
 ### GitHub collector skipped
 `github_username` is empty in `config.yaml`. Set it to your GitHub username to enable repo scanning. Without it, only URLs you paste manually are fetched.
+
+### Crustdata collector skipped or errored
+- Set `CRUSTDATA_API_KEY` in `.env` and `crustdata_enabled: true` in config
+- Set `profile.linkedin` to your LinkedIn URL (or `sources.crustdata_profile_url`)
+- Some field sections (e.g. `honors`, `certifications`) may be plan-gated — remove them from `crustdata_fields` if you get a 403
+- Set `crustdata.transport: rest` to use the direct REST API instead of MCP
+
+### Job targeting returned no results
+- Set `target.enabled: true` and at least one entry in `target.titles`
+- Broaden filters (remove `location_country` or try a more common title)
+- Check credit balance on your Crustdata account (~1 credit per job returned)
 
 ### PDF text extraction returned little/no text
 Your PDF might be image-based (scanned). The synthesizer will still run but with less baseline context. This is fine — your input files (manual context, LinkedIn, etc.) provide the signal.

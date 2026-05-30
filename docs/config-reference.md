@@ -43,6 +43,35 @@ sources:
   # Extra URLs to fetch — one per line. Deduplicated against manual_context.md.
   urls_file: "inputs/urls.txt"
 
+  # Crustdata Person Enrich via MCP (optional; requires CRUSTDATA_API_KEY)
+  crustdata_enabled: false
+  crustdata_profile_url: ""      # defaults to profile.linkedin
+  crustdata_use_email: false
+  crustdata_use_live: false
+  crustdata_min_similarity_score: 0.8
+  crustdata_fields:
+    - basic_profile
+    - experience
+    - education
+    - skills
+    - social_handles
+
+# Crustdata MCP transport
+crustdata:
+  mcp_url: "https://mcp.crustdata.com/mcp"
+  transport: "mcp"   # mcp | rest
+
+# Job-targeted resume tailoring (optional)
+target:
+  enabled: false
+  titles: ["Backend Engineer", "Software Engineer"]
+  category: ""
+  workplace_type: ""
+  location_country: ""
+  industries: []
+  company_domains: []
+  max_jobs: 15
+
 # ─── Models ──────────────────────────────────────────────────────────────────
 models:
   # Full-resume synthesis (collect → merge). Opus recommended for best results.
@@ -200,6 +229,7 @@ Loaded from `.env` at startup (via `python-dotenv`). Environment variables take 
 | Variable | Notes |
 |----------|-------|
 | `ANTHROPIC_API_KEY` | **Required.** Your Anthropic key. |
+| `CRUSTDATA_API_KEY` | Optional. Crustdata key for MCP person enrich and job search. |
 | `GITHUB_TOKEN` | Optional. GitHub PAT for higher rate limits / private repos. |
 | `RESUME_AGENT_SYNTHESIZER_MODEL` | Overrides `models.synthesizer` in config |
 | `RESUME_AGENT_EXTRACTOR_MODEL` | Overrides `models.extractor` in config |
@@ -207,5 +237,6 @@ Loaded from `.env` at startup (via `python-dotenv`). Environment variables take 
 `.env` example:
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
+CRUSTDATA_API_KEY=...
 GITHUB_TOKEN=ghp_...
 ```

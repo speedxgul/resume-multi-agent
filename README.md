@@ -54,9 +54,12 @@ See [Getting Started](docs/getting-started.md) for the full walkthrough.
 flowchart LR
   PDF[Resume PDF] --> Extract
   GH[GitHub API] --> Collectors
+  CD[Crustdata MCP\nperson enrich] --> Collectors
+  TJ[Crustdata MCP\njob search] --> Collectors
   LI[LinkedIn paste] --> Collectors
   TW[Twitter paste] --> Collectors
-  MC[Manual context + URLs] --> Collectors
+  MC[Manual context] --> Collectors
+  URL[URL fetcher] --> Collectors
   Collectors --> Synth[Claude Synthesizer\nOpus]
   Extract --> Synth
   Synth --> Review[Human review CLI]
@@ -68,7 +71,8 @@ flowchart LR
 |-------|------|
 | GitHub collector | Repos, languages, README excerpts via GitHub API |
 | LinkedIn loader | Reads pasted profile text |
-| Crustdata MCP | Person enrich + optional job-search tailoring via [mcp.crustdata.com](https://mcp.crustdata.com/mcp) |
+| Crustdata MCP | Structured LinkedIn profile via [mcp.crustdata.com](https://mcp.crustdata.com/mcp) when `crustdata_enabled: true` |
+| Job search collector | Optional — target role postings for ATS tailoring when `target.enabled: true` |
 | Twitter loader | Reads pasted bio / pinned tweets |
 | Manual context | Hackathon wins, recent projects, free-form notes; auto-fetches embedded URLs |
 | URL fetcher | Fetches Devpost, blogs, project pages |
@@ -93,6 +97,7 @@ flowchart LR
 
 - Python 3.11+
 - `ANTHROPIC_API_KEY` (required — [get one here](https://console.anthropic.com/))
+- `CRUSTDATA_API_KEY` (optional — for Crustdata MCP person enrich and job targeting; [crustdata.com](https://crustdata.com))
 - `GITHUB_TOKEN` (optional — raises API rate limits; needed only for `github_username` collection or private repos)
 - **PDF compiler**: [Tectonic](https://tectonic-typesetting.github.io/) (recommended) or TeX Live (`pdflatex`)
 

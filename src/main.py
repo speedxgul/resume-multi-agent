@@ -19,7 +19,7 @@ from src.utils.pdf import extract_text
 
 app = typer.Typer(
     name="resume-agent",
-    help="Multi-agent resume updater: GitHub, Crustdata, LinkedIn paste, URLs, manual context -> LaTeX/PDF.",
+    help="Multi-agent resume updater: GitHub, Crustdata MCP, LinkedIn paste, URLs, manual context, job targeting -> LaTeX/PDF.",
 )
 console = Console()
 
